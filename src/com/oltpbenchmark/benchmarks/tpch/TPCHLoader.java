@@ -31,10 +31,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -370,6 +367,8 @@ public class TPCHLoader extends Loader<TPCHBenchmark> {
                         workConf.getDBPassword());
                 this.conn.setAutoCommit(false);
 
+                Statement stmt = conn.createStatement();
+
                 try {
                     now = new java.util.Date();
                     LOG.debug("\nStart " + tableName + " load @ " + now + "...");
@@ -467,7 +466,8 @@ public class TPCHLoader extends Loader<TPCHBenchmark> {
                             LOG.error("Invalid CSV file: " + file.getAbsolutePath());
                         }
 
-                        prepStmt.addBatch();
+                        stmt.execute(prepStmt.toString());
+                        conn.commit();
                         ++recordsRead;
 
                         if ((recordsRead % configCommitCount) == 0) {
@@ -478,9 +478,6 @@ public class TPCHLoader extends Loader<TPCHBenchmark> {
                             LOG.debug(elapsedStr.substring(0,30)
                                     + "  Writing record " + recordsRead);
                             lastTimeMS = currTime;
-                            prepStmt.executeBatch();
-                            prepStmt.clearBatch();
-                            conn.commit();
                         }
                     }
 
@@ -491,8 +488,6 @@ public class TPCHLoader extends Loader<TPCHBenchmark> {
                     LOG.debug(elapsedStr.substring(0,30)
                             + "  Writing record " + recordsRead);
                     lastTimeMS = currTime;
-                    prepStmt.executeBatch();
-                    conn.commit();
                     now = new java.util.Date();
                     LOG.debug("End " + tableName + " Load @ " + now);
 
