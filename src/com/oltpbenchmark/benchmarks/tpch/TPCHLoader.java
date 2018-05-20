@@ -467,7 +467,6 @@ public class TPCHLoader extends Loader<TPCHBenchmark> {
                         }
 
                         stmt.execute(prepStmt.toString());
-                        conn.commit();
                         ++recordsRead;
 
                         if ((recordsRead % configCommitCount) == 0) {
@@ -478,6 +477,7 @@ public class TPCHLoader extends Loader<TPCHBenchmark> {
                             LOG.debug(elapsedStr.substring(0,30)
                                     + "  Writing record " + recordsRead);
                             lastTimeMS = currTime;
+                            conn.commit();
                         }
                     }
 
@@ -488,6 +488,7 @@ public class TPCHLoader extends Loader<TPCHBenchmark> {
                     LOG.debug(elapsedStr.substring(0,30)
                             + "  Writing record " + recordsRead);
                     lastTimeMS = currTime;
+                    conn.commit();
                     now = new java.util.Date();
                     LOG.debug("End " + tableName + " Load @ " + now);
 
