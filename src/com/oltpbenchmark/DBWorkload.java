@@ -513,79 +513,89 @@ public class DBWorkload {
         @Deprecated
         boolean verbose = argsLine.hasOption("v");
 
-        // Create the Benchmark's Database
-        if (isBooleanOptionSet(argsLine, "create")) {
-            for (BenchmarkModule benchmark : benchList) {
-                LOG.info("Creating new " + benchmark.getBenchmarkName().toUpperCase() + " database...");
-                runCreator(benchmark, verbose);
-                LOG.info("Finished!");
-                LOG.info(SINGLE_LINE);
-            }
-        } else if (LOG.isDebugEnabled()) {
-            LOG.debug("Skipping creating benchmark database tables");
-            LOG.info(SINGLE_LINE);
-        }
+        try {
 
-        // Clear the Benchmark's Database
-        if (isBooleanOptionSet(argsLine, "clear")) {
+            // Create the Benchmark's Database
+            if (isBooleanOptionSet(argsLine, "create")) {
                 for (BenchmarkModule benchmark : benchList) {
-                LOG.info("Resetting " + benchmark.getBenchmarkName().toUpperCase() + " database...");
-                benchmark.clearDatabase();
-                LOG.info("Finished!");
+                    LOG.info("Creating new " + benchmark.getBenchmarkName().toUpperCase() + " database...");
+                    runCreator(benchmark, verbose);
+                    LOG.info("Finished!");
+                    LOG.info(SINGLE_LINE);
+                }
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug("Skipping creating benchmark database tables");
                 LOG.info(SINGLE_LINE);
             }
-        } else if (LOG.isDebugEnabled()) {
-            LOG.debug("Skipping creating benchmark database tables");
-            LOG.info(SINGLE_LINE);
-        }
 
-        // Execute Loader
-        if (isBooleanOptionSet(argsLine, "load")) {
-            for (BenchmarkModule benchmark : benchList) {
-                LOG.info("Loading data into " + benchmark.getBenchmarkName().toUpperCase() + " database...");
-                runLoader(benchmark, verbose);
-                LOG.info("Finished!");
+            // Clear the Benchmark's Database
+            if (isBooleanOptionSet(argsLine, "clear")) {
+                for (BenchmarkModule benchmark : benchList) {
+                    LOG.info("Resetting " + benchmark.getBenchmarkName().toUpperCase() + " database...");
+                    benchmark.clearDatabase();
+                    LOG.info("Finished!");
+                    LOG.info(SINGLE_LINE);
+                }
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug("Skipping creating benchmark database tables");
                 LOG.info(SINGLE_LINE);
             }
-        } else if (LOG.isDebugEnabled()) {
-            LOG.debug("Skipping loading benchmark database records");
-            LOG.info(SINGLE_LINE);
-        }
-        
-        // Execute a Script
-        if (argsLine.hasOption("runscript")) {
-            for (BenchmarkModule benchmark : benchList) {
-                String script = argsLine.getOptionValue("runscript");
-                LOG.info("Running a SQL script: "+script);
-                runScript(benchmark, script);
-                LOG.info("Finished!");
+
+            // Execute Loader
+            if (isBooleanOptionSet(argsLine, "load")) {
+                for (BenchmarkModule benchmark : benchList) {
+                    LOG.info("Loading data into " + benchmark.getBenchmarkName().toUpperCase() + " database...");
+                    runLoader(benchmark, verbose);
+                    LOG.info("Finished!");
+                    LOG.info(SINGLE_LINE);
+                }
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug("Skipping loading benchmark database records");
                 LOG.info(SINGLE_LINE);
             }
-        }
 
-        // Execute Workload
-        if (isBooleanOptionSet(argsLine, "execute")) {
-            // Bombs away!
-            Results r = null;
-            try {
-                r = runWorkload(benchList, verbose, intervalMonitor);
-            } catch (Throwable ex) {
-                LOG.error("Unexpected error when running benchmarks.", ex);
-                System.exit(1);
+            // Execute a Script
+            if (argsLine.hasOption("runscript")) {
+                for (BenchmarkModule benchmark : benchList) {
+                    String script = argsLine.getOptionValue("runscript");
+                    LOG.info("Running a SQL script: " + script);
+                    runScript(benchmark, script);
+                    LOG.info("Finished!");
+                    LOG.info(SINGLE_LINE);
+                }
             }
-            assert(r != null);
 
-            // WRITE OUTPUT
+            // Execute Workload
+            if (isBooleanOptionSet(argsLine, "execute")) {
+                // Bombs away!
+                Results r = null;
+                try {
+                    r = runWorkload(benchList, verbose, intervalMonitor);
+                } catch (Throwable ex) {
+                    LOG.error("Unexpected error when running benchmarks.", ex);
+                    System.exit(1);
+                }
+                assert (r != null);
+
+                // WRITE OUTPUT
+                writeOutputs(r, activeTXTypes, argsLine, xmlConfig);
+
+                // WRITE HISTOGRAMS
+                if (argsLine.hasOption("histograms")) {
+                    writeHistograms(r);
+                }
+
+
+            } else {
+                LOG.info("Skipping benchmark workload execution");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Results r = new Results(1, 0,
+                    new DistributionStatistics(0, new long[]{}, 0, 0),
+                    new ArrayList<LatencyRecord.Sample>());
             writeOutputs(r, activeTXTypes, argsLine, xmlConfig);
-            
-            // WRITE HISTOGRAMS
-            if (argsLine.hasOption("histograms")) {
-                writeHistograms(r);
-            }
-
-
-        } else {
-            LOG.info("Skipping benchmark workload execution");
+            LOG.info("Errors were encountered. Writing dummy result");
         }
     }
     
