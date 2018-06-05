@@ -171,6 +171,7 @@ public class ResultUploader {
 
             HttpEntity reqEntity = MultipartEntityBuilder.create()
                     .addTextBody("upload_code", uploadCode)
+                    .addTextBody("result_ok", String.valueOf(results.status == Results.Status.RESULT_OK))
                     .addPart("sample_data", new FileBody(samplesFile))
                     .addPart("raw_data", new FileBody(csvDataFile))
                     .addPart("db_parameters_data", new FileBody(paramsFile))

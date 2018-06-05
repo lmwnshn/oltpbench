@@ -31,9 +31,13 @@ import com.oltpbenchmark.util.Histogram;
 import com.oltpbenchmark.util.StringUtil;
 
 public final class Results {
+
+    public enum Status {RESULT_OK, RESULT_ERR}
+
     public final long nanoSeconds;
     public final int measuredRequests;
     public final DistributionStatistics latencyDistribution;
+    public final Status status;
     final Histogram<TransactionType> txnSuccess = new Histogram<TransactionType>(true);
     final Histogram<TransactionType> txnAbort = new Histogram<TransactionType>(true);
     final Histogram<TransactionType> txnRetry = new Histogram<TransactionType>(true);
@@ -42,10 +46,12 @@ public final class Results {
     
     public final List<LatencyRecord.Sample> latencySamples;
 
-    public Results(long nanoSeconds, int measuredRequests, DistributionStatistics latencyDistribution, final List<LatencyRecord.Sample> latencySamples) {
+    public Results(long nanoSeconds, int measuredRequests, DistributionStatistics latencyDistribution,
+                   final List<LatencyRecord.Sample> latencySamples, Status status) {
         this.nanoSeconds = nanoSeconds;
         this.measuredRequests = measuredRequests;
         this.latencyDistribution = latencyDistribution;
+        this.status = status;
 
         if (latencyDistribution == null) {
             assert latencySamples == null;

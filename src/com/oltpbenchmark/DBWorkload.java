@@ -591,11 +591,12 @@ public class DBWorkload {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            LOG.info("Errors were encountered. Writing dummy result");
             Results r = new Results(1, 0,
                     new DistributionStatistics(0, new long[]{}, 0, 0),
-                    new ArrayList<LatencyRecord.Sample>());
+                    new ArrayList<LatencyRecord.Sample>(),
+                    Results.Status.RESULT_ERR);
             writeOutputs(r, activeTXTypes, argsLine, xmlConfig);
-            LOG.info("Errors were encountered. Writing dummy result");
         }
     }
     
