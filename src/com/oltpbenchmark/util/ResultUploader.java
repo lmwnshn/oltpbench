@@ -172,10 +172,10 @@ public class ResultUploader {
             HttpEntity reqEntity = MultipartEntityBuilder.create()
                     .addTextBody("upload_code", uploadCode)
                     .addTextBody("result_ok", String.valueOf(results.status == Results.Status.RESULT_OK))
-                    .addPart("sample_data", new FileBody(samplesFile))
+                    /*.addPart("sample_data", new FileBody(samplesFile))
                     .addPart("raw_data", new FileBody(csvDataFile))
                     .addPart("db_parameters_data", new FileBody(paramsFile))
-                    .addPart("db_metrics_data", new FileBody(metricsFile))
+                    .addPart("db_metrics_data", new FileBody(metricsFile))*/
                     .addPart("benchmark_conf_data", new FileBody(expConfigFile))
                     .addPart("summary_data", new FileBody(summaryFile))
                     .build();

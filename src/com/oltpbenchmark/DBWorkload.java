@@ -573,7 +573,7 @@ public class DBWorkload {
                     r = runWorkload(benchList, verbose, intervalMonitor);
                 } catch (Throwable ex) {
                     LOG.error("Unexpected error when running benchmarks.", ex);
-                    System.exit(1);
+                    throw ex;
                 }
                 assert (r != null);
 
