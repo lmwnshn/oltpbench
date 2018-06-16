@@ -51,44 +51,30 @@ public class AddWatchList extends Procedure {
 	
     public void run(Connection conn, int userId, int nameSpace, String pageTitle) throws SQLException {
 		if (userId > 0) {
-		    // TODO: find a way to by pass Unique constraints in SQL server (Replace, Merge ..?)
-		    // Here I am simply catching the right excpetion and move on.
-		    try
-		    {
-    			PreparedStatement ps = this.getPreparedStatement(conn, insertWatchList);
-    			ps.setInt(1, userId);
-    			ps.setInt(2, nameSpace);
-    			ps.setString(3, pageTitle);
-    			ps.executeUpdate();
-		    }
-		    catch (SQLException ex) {
-                if (ex.getErrorCode() != 2627 || !ex.getSQLState().equals("23000"))
-                    throw new RuntimeException("Unique Key Problem in this DBMS");
-            }
+			PreparedStatement ps;
+
+			ps = this.getPreparedStatement(conn, insertWatchList);
+			ps.setInt(1, userId);
+			ps.setInt(2, nameSpace);
+			ps.setString(3, pageTitle);
+			ps.executeUpdate();
 		
 			if (nameSpace == 0) 
-			{ 
-		        try
-		        {
-    				// if regular page, also add a line of
-    				// watchlist for the corresponding talk page
-    			    PreparedStatement ps = this.getPreparedStatement(conn, insertWatchList);
-    				ps.setInt(1, userId);
-    				ps.setInt(2, 1);
-    				ps.setString(3, pageTitle);
-    				ps.executeUpdate();
-		        }
-	            catch (SQLException ex) {
-	                if (ex.getErrorCode() != 2627 || !ex.getSQLState().equals("23000"))
-	                    throw new RuntimeException("Unique Key Problem in this DBMS");
-	            }
+			{
+				// if regular page, also add a line of
+				// watchlist for the corresponding talk page
+				ps = this.getPreparedStatement(conn, insertWatchList);
+				ps.setInt(1, userId);
+				ps.setInt(2, 1);
+				ps.setString(3, pageTitle);
+				ps.executeUpdate();
 			}
 
-			PreparedStatement ps = this.getPreparedStatement(conn, setUserTouched);
+			ps = this.getPreparedStatement(conn, setUserTouched);
 			ps.setString(1, TimeUtil.getCurrentTimeString14());
 			ps.setInt(2, userId);
 			ps.executeUpdate();
 		}
 	}
-    
+
 }

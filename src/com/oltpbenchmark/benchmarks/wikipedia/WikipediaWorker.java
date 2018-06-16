@@ -82,11 +82,15 @@ public class WikipediaWorker extends Worker<WikipediaBenchmark> {
         String pageTitle = WikipediaUtil.generatePageTitle(this.rng(), page_id);
         int nameSpace = WikipediaUtil.generatePageNamespace(this.rng(), page_id);
 
-        // AddWatchList
         try {
+            // AddWatchList
             if (procClass.equals(AddWatchList.class)) {
                 assert (userId > 0);
-                this.addToWatchlist(userId, nameSpace, pageTitle);
+                try {
+                    this.addToWatchlist(userId, nameSpace, pageTitle);
+                } catch (SQLException ex) {
+                    // ignore attempts at inserting duplicate (user, name, page)t
+                }
             }
             // RemoveWatchList
             else if (procClass.equals(RemoveWatchList.class)) {
