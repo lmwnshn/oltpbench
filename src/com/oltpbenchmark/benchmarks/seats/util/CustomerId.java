@@ -22,8 +22,8 @@ import com.oltpbenchmark.util.CompositeId;
 public class CustomerId extends CompositeId {
 
     private static final int COMPOSITE_BITS[] = {
-        48, // ID
-        16, // AIRPORT_ID
+        52, // ID
+        12, // AIRPORT_ID
     };
     private static final long COMPOSITE_POWS[] = compositeBitsPreCompute(COMPOSITE_BITS);
     
