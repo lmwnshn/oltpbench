@@ -31,8 +31,15 @@ public abstract class WikipediaUtil {
         // HACK: Always append the page id to the title
         // so that it's guaranteed to be unique.
         // Otherwise we can get collisions with larger scale factors.
+        String hack = " [" + page_id + "]";
         int titleLength = h_titleLength.nextValue();
-        return TextGenerator.randomStr(rand, titleLength) + " [" + page_id + "]";
+        // we therefore must adjust the length accordingly
+        if (titleLength >= 255) {
+            titleLength -= hack.length();
+        }
+
+
+        return String.format("%s%s", TextGenerator.randomStr(rand, titleLength), hack);
     }
 
     public static int generatePageNamespace(Random rand, int page_id) {

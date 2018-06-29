@@ -17,9 +17,12 @@
 package com.oltpbenchmark.benchmarks.wikipedia;
 
 import java.net.UnknownHostException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Random;
+import java.sql.Statement;
+import java.util.concurrent.CountDownLatch;
 
+import com.oltpbenchmark.util.BloomFilter;
 import org.apache.log4j.Logger;
 
 import com.oltpbenchmark.api.Procedure;
@@ -41,6 +44,8 @@ import com.oltpbenchmark.util.TextGenerator;
 public class WikipediaWorker extends Worker<WikipediaBenchmark> {
     private static final Logger LOG = Logger.getLogger(WikipediaWorker.class);
 
+    private static CountDownLatch bloomFilterLatch = new CountDownLatch(1);
+    private static BloomFilter<String> addWLBloomFilter;
     private final int num_users;
     private final int num_pages;
 
@@ -48,10 +53,44 @@ public class WikipediaWorker extends Worker<WikipediaBenchmark> {
         super(benchmarkModule, id);
         this.num_users = (int) Math.round(WikipediaConstants.USERS * this.getWorkloadConfiguration().getScaleFactor());
         this.num_pages = (int) Math.round(WikipediaConstants.PAGES * this.getWorkloadConfiguration().getScaleFactor());
+
+        // only need one bloom filter across all workers, populate with 0th worker
+        if (id == 0) {
+            addWLBloomFilter = new BloomFilter<String>(this.num_users * WikipediaConstants.MAX_WATCHES_PER_USER, 0.03);
+            initBloomFilter();
+            bloomFilterLatch.countDown();
+        }
+
+        // wait for the bloom filter to be populated
+        try {
+            bloomFilterLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initBloomFilter() {
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT WL_USER, WL_NAMESPACE, WL_TITLE FROM WATCHLIST");
+            while (rs.next()) {
+                int userId = rs.getInt(1);
+                int nameSpace = rs.getInt(2);
+                String pageTitle = rs.getString(3);
+                String key = generateBloomKey(userId, nameSpace, pageTitle);
+                addWLBloomFilter.add(key);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private String generateUserIP() {
         return String.format("%d.%d.%d.%d", this.rng().nextInt(255) + 1, this.rng().nextInt(256), this.rng().nextInt(256), this.rng().nextInt(256));
+    }
+
+    private String generateBloomKey(int userId, int nameSpace, String pageTitle) {
+        return String.format("%d %d %s", userId, nameSpace, pageTitle);
     }
 
     @Override
@@ -77,20 +116,27 @@ public class WikipediaWorker extends Worker<WikipediaBenchmark> {
         } while (needUser && userId == WikipediaConstants.ANONYMOUS_USER_ID);
 
         // Figure out what page they're going to update
-        int page_id = z_pages.nextInt();
 
-        String pageTitle = WikipediaUtil.generatePageTitle(this.rng(), page_id);
-        int nameSpace = WikipediaUtil.generatePageNamespace(this.rng(), page_id);
+        int page_id;
+        int nameSpace;
+        String pageTitle;
+        String key;
+
+        boolean isAddWL = procClass.equals(AddWatchList.class);
+
+        do {
+            page_id = z_pages.nextInt();
+            nameSpace = WikipediaUtil.generatePageNamespace(this.rng(), page_id);
+            pageTitle = WikipediaUtil.generatePageTitle(this.rng(), page_id);
+            key = generateBloomKey(userId, nameSpace, pageTitle);
+        } while (isAddWL && addWLBloomFilter.contains(key));
+
 
         try {
             // AddWatchList
             if (procClass.equals(AddWatchList.class)) {
                 assert (userId > 0);
-                try {
-                    this.addToWatchlist(userId, nameSpace, pageTitle);
-                } catch (SQLException ex) {
-                    // ignore attempts at inserting duplicate (user, name, page)t
-                }
+                this.addToWatchlist(userId, nameSpace, pageTitle);
             }
             // RemoveWatchList
             else if (procClass.equals(RemoveWatchList.class)) {
@@ -149,7 +195,17 @@ public class WikipediaWorker extends Worker<WikipediaBenchmark> {
     public void addToWatchlist(int userId, int nameSpace, String pageTitle) throws SQLException {
         AddWatchList proc = this.getProcedure(AddWatchList.class);
         assert (proc != null);
-        proc.run(this.conn, userId, nameSpace, pageTitle);
+
+        String key = generateBloomKey(userId, nameSpace, pageTitle);
+        String talkPageKey = generateBloomKey(userId, 1, pageTitle);
+        boolean namespaceOneExists = addWLBloomFilter.contains(talkPageKey);
+
+        addWLBloomFilter.add(key);
+        if (!namespaceOneExists) {
+            addWLBloomFilter.add(talkPageKey);
+        }
+
+        proc.run(this.conn, userId, nameSpace, pageTitle, namespaceOneExists);
     }
 
     public void removeFromWatchlist(int userId, int nameSpace, String pageTitle) throws SQLException {
@@ -170,7 +226,7 @@ public class WikipediaWorker extends Worker<WikipediaBenchmark> {
 
         WikipediaBenchmark b = this.getBenchmarkModule();
         int revCommentLen = b.commentLength.nextValue().intValue();
-        String revComment = TextGenerator.randomStr(this.rng(), revCommentLen + 1);
+        String revComment = TextGenerator.randomStr(this.rng(), revCommentLen);
         int revMinorEdit = b.minorEdit.nextValue().intValue();
 
         // Permute the original text of the article

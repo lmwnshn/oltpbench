@@ -49,7 +49,8 @@ public class AddWatchList extends Procedure {
     // RUN
     // -----------------------------------------------------------------
 	
-    public void run(Connection conn, int userId, int nameSpace, String pageTitle) throws SQLException {
+    public void run(Connection conn, int userId, int nameSpace, String pageTitle,
+					boolean namespaceOneExists) throws SQLException {
 		if (userId > 0) {
 			PreparedStatement ps;
 
@@ -58,11 +59,12 @@ public class AddWatchList extends Procedure {
 			ps.setInt(2, nameSpace);
 			ps.setString(3, pageTitle);
 			ps.executeUpdate();
-		
-			if (nameSpace == 0) 
+
+			if (nameSpace == 0 && !namespaceOneExists)
 			{
 				// if regular page, also add a line of
 				// watchlist for the corresponding talk page
+				// unless it was already added!
 				ps = this.getPreparedStatement(conn, insertWatchList);
 				ps.setInt(1, userId);
 				ps.setInt(2, 1);
