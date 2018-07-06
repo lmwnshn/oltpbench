@@ -69,9 +69,12 @@ public abstract class GenericQuery extends Procedure {
                 throw ex;
             }
         }
+
+        /*
         while (rs.next()) {
             //do nothing
         }
+        */
 
         if (owner != null)
             owner.setCurrStatement(null);
