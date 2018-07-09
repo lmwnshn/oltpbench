@@ -23,6 +23,7 @@ import java.sql.Savepoint;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -101,6 +102,10 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
             this.class_procedures.put(proc.getClass(), proc);
             // e.getValue().generateAllPreparedStatements(this.conn);
         } // FOR
+    }
+
+    public void setWorkload(Queue<TransactionType> workload) {
+        this.wrkldState.setCurrentPhaseWorkload(workload, true);
     }
 
     /**

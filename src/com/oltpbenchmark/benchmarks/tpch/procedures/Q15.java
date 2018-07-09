@@ -85,6 +85,7 @@ public class Q15 extends GenericQuery {
         } finally {
             sql = dropview_stmt.getSQL();
             stmt.execute(sql);
+            conn.commit();
         }
 
         return ret;

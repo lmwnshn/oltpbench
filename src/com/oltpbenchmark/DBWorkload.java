@@ -404,7 +404,7 @@ public class DBWorkload {
                 // We now have the option to run all queries exactly once in
                 // a serial (rather than random) order.
                 String serial_string;
-                serial_string = work.getString("serial", "false");
+                serial_string = work.getString("serial" + pluginTest, "false");
                 if (serial_string.equals("true")) {
                     serial = true;
                 }

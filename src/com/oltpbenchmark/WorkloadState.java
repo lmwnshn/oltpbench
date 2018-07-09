@@ -16,11 +16,10 @@
 
 package com.oltpbenchmark;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.LinkedList;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.util.QueueLimitException;
 import org.apache.log4j.Logger;
@@ -35,7 +34,7 @@ import org.apache.log4j.Logger;
 public class WorkloadState {
     private static final int RATE_QUEUE_LIMIT = 10000;
     private static final Logger LOG = Logger.getLogger(ThreadBench.class);
-    
+
     private LinkedList<SubmittedProcedure> workQueue = new LinkedList<SubmittedProcedure>();
     private BenchmarkState benchmarkState;
     private int workersWaiting = 0;
@@ -48,14 +47,17 @@ public class WorkloadState {
     private Phase currentPhase = null;
     private long phaseStartNs = 0;
     private TraceReader traceReader = null;
-    
+
+    private Queue<TransactionType> riggedTransactions = null;
+    private boolean endAfterRig = false;
+
     public WorkloadState(BenchmarkState benchmarkState, List<Phase> works, int num_terminals, TraceReader traceReader) {
         this.benchmarkState = benchmarkState;
         this.works = works;
         this.num_terminals = num_terminals;
         this.workerNeedSleep = num_terminals;
         this.traceReader = traceReader;
-        
+
         phaseIterator = works.iterator();
     }
     
@@ -120,6 +122,14 @@ public class WorkloadState {
    
    /** Called by ThreadPoolThreads when waiting for work. */
     public SubmittedProcedure fetchWork() {
+        if (riggedTransactions != null) {
+            if (riggedTransactions.isEmpty() && endAfterRig) {
+                this.benchmarkState.signalUserEndPhase();
+            } else {
+                return new SubmittedProcedure(riggedTransactions.remove().getId());
+            }
+        }
+
         synchronized(this) {
             if (currentPhase != null && currentPhase.isSerial()) {
                 ++workersWaiting;
@@ -289,5 +299,16 @@ public class WorkloadState {
    public long getTestStartNs() {
        return benchmarkState.getTestStartNs();
    }
-   
+
+    /**
+     * Rigs the workload
+     * @param workload workload that fetchWork will return
+     * @param endAfterRig true if the phase should end when the rigged workload is done
+     */
+    public void setCurrentPhaseWorkload(Queue<TransactionType> workload, boolean endAfterRig) {
+        this.riggedTransactions = new ConcurrentLinkedQueue<>(workload);
+        if (endAfterRig) {
+            this.endAfterRig = true;
+        }
+    }
 }

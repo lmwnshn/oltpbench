@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <plugins>
+    <plugin name="tpcclike">com.oltpbenchmark.benchmarks.tpcclike.TPCCLikeBenchmark</plugin>
     <plugin name="tpcc">com.oltpbenchmark.benchmarks.tpcc.TPCCBenchmark</plugin>
     <plugin name="tpch">com.oltpbenchmark.benchmarks.tpch.TPCHBenchmark</plugin>
     <plugin name="tatp">com.oltpbenchmark.benchmarks.tatp.TATPBenchmark</plugin>

@@ -129,4 +129,8 @@ public final class BenchmarkState {
 		return current;
 	}
 
+	public void signalUserEndPhase() {
+		this.state = State.USER_END_PHASE;
+	}
+
 }

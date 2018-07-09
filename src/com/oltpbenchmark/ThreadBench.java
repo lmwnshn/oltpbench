@@ -403,8 +403,8 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
                     phaseComplete = testState.getState()
                                     == State.LATENCY_COMPLETE;
                 else
-                    phaseComplete = testState.getState() == State.MEASURE
-                                    && (start + delta <= now);
+                    phaseComplete = testState.getState() == State.USER_END_PHASE ||
+                            (testState.getState() == State.MEASURE && (start + delta <= now));
             }
 
             // Go to next phase if this one is complete
