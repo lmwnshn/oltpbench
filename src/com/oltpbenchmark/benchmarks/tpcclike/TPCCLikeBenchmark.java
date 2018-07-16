@@ -94,6 +94,26 @@ public class TPCCLikeBenchmark extends BenchmarkModule {
         }
 
         LOG.info(String.format("%d transactions generated. We only support 1 worker.", transactions.size()));
+        PrintWriter pw = new PrintWriter("txn_generated.sql");
+        pw.println("\\c tpch");
+        pw.println("\\o out.txt");
+        pw.println("\\timing");
+        for (Transaction txn : transactions) {
+            String type;
+            if (txn instanceof NewOrderTransaction) {
+                type = "NewOrder";
+            } else if (txn instanceof DeliveryTransaction) {
+                type = "Delivery";
+            } else {
+                type = "Payment";
+            }
+            pw.println(String.format("\\! echo \"%s\"", type));
+            pw.println("BEGIN TRANSACTION;");
+            for (String s : txn.getTransactions()) {
+                pw.println(s);
+            }
+            pw.println("END TRANSACTION;");
+        }
 
         List<Worker<? extends BenchmarkModule>> workers = new ArrayList<Worker<? extends BenchmarkModule>>();
         workers.add(new TPCCLikeWorker(this, 0, transactions));
