@@ -1,6 +1,7 @@
 package com.oltpbenchmark.benchmarks.tpcclike.util;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class TPCCLikeUtil {
@@ -17,6 +18,41 @@ public class TPCCLikeUtil {
         cal.setTime(date);
         cal.add(Calendar.DATE, daysToAdd);
         return new Date(cal.getTimeInMillis());
+    }
+
+    public static String replaceParams(String sql, int[] locs, String[] params) {
+        ArrayList<Integer> splits = new ArrayList<>();
+        {
+            String tmp = sql;
+            int index = tmp.indexOf("?");
+            int off = 0;
+            while (index != -1) {
+                splits.add(index + off);
+                tmp = tmp.substring(index + 1);
+                off += index + 1;
+                index = tmp.indexOf("?");
+            }
+        }
+
+        String result = sql;
+        {
+            int off = 0;
+            for (int i = 0; i < locs.length; i++) {
+                int paramLoc = locs[i] - 1; // match JDBC
+                int cut = off + splits.get(paramLoc);
+                String pre = result.substring(0, cut);
+                String post;
+                if (cut == result.length()) {
+                    post = "";
+                } else {
+                    post = result.substring(cut + 1);
+                }
+                result = String.format("%s%s%s", pre, params[i], post);
+                off += params[i].length() - 1;
+            }
+        }
+
+        return result;
     }
 
 }

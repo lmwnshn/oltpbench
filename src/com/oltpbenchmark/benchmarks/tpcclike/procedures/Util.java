@@ -14,11 +14,11 @@ public class Util extends Procedure {
     // these SQLStmts use LIMIT to prefetch as RANDOM() can be slow
 
     private SQLStmt getRandPartSuppStmt = new SQLStmt(
-            "SELECT ps_partkey, ps_suppkey FROM partsupp ORDER BY RANDOM() LIMIT ?"
+            "SELECT ps_partkey, ps_suppkey FROM partsupp ORDER BY RANDOM() LIMIT 10000"
     );
 
     private SQLStmt getRandCustKeyStmt = new SQLStmt(
-            "SELECT c_custkey FROM customer ORDER BY RANDOM() LIMIT ?"
+            "SELECT c_custkey FROM customer ORDER BY RANDOM() LIMIT 10000"
     );
 
     private SQLStmt getRetailPriceStmt = new SQLStmt(
@@ -52,7 +52,7 @@ public class Util extends Procedure {
         }
 
         PreparedStatement ps = this.getPreparedStatement(conn, getRandPartSuppStmt);
-        ps.setInt(1, numPrefetch);
+        //ps.setInt(1, numPrefetch);
         ResultSet rs = ps.executeQuery();
 
         while (rs.next()) {
@@ -79,7 +79,7 @@ public class Util extends Procedure {
         }
 
         PreparedStatement ps = this.getPreparedStatement(conn, getRandCustKeyStmt);
-        ps.setInt(1, numPrefetch);
+        //ps.setInt(1, numPrefetch);
         ResultSet rs = ps.executeQuery();
 
         while (rs.next()) {

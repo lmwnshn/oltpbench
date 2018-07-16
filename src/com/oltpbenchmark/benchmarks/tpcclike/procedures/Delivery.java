@@ -71,9 +71,15 @@ public class Delivery extends Procedure {
 
             NewOrderTransaction orderTxn = orderQueue.remove();
             for (LineItem lineItem : orderTxn.getLineItems()) {
-                lineItemPS.setDate(1, txnDate);
-                lineItemPS.setInt(2, lineItem.getOrderKey());
-                lineItemPS.setInt(3, lineItem.getLineNumber());
+                String sql = TPCCLikeUtil.replaceParams(updateLineItemStmt.getSQL(),
+                        new int[]{1},
+                        new String[]{
+                                String.format("'%s'::date", txnDate)
+                        });
+                lineItemPS = conn.prepareStatement(sql);
+                //lineItemPS.setDate(1, txnDate);
+                lineItemPS.setInt(1, lineItem.getOrderKey());
+                lineItemPS.setInt(2, lineItem.getLineNumber());
                 lineItemPS.addBatch();
             }
             Order order = orderTxn.getOrder();
@@ -81,8 +87,14 @@ public class Delivery extends Procedure {
             getOrderCustPricePS.setInt(1, order.getOrderKey());
             getOrderCustPricePS.addBatch();
             // before we update the cust accordingly
-            updateCustBalPS.setDouble(1, order.getTotalPrice());
-            updateCustBalPS.setInt(2, order.getCustKey());
+            String sql = TPCCLikeUtil.replaceParams(updateCustBalStmt.getSQL(),
+                    new int[]{1},
+                    new String[]{
+                            String.valueOf(order.getTotalPrice())
+                    });
+            updateCustBalPS = conn.prepareStatement(sql);
+//            updateCustBalPS.setDouble(1, order.getTotalPrice());
+            updateCustBalPS.setInt(1, order.getCustKey());
             updateCustBalPS.addBatch();
 
             prepList.add(lineItemPS);

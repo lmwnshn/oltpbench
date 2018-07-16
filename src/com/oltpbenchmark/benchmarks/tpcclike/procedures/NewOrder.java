@@ -69,7 +69,7 @@ public class NewOrder extends Procedure {
                                            int scaleFactor, int orderkey, Date orderdate)
             throws SQLException {
         // first we add the line items
-        PreparedStatement insertLineItemPS = this.getPreparedStatement(conn, insertLineItemStmt);
+        PreparedStatement insertLineItemPS = getPreparedStatement(conn, insertLineItemStmt);
         List<LineItem> lineItems = new ArrayList<>();
 
         double o_totalprice = 0.0; // we can compute this as we generate line items
@@ -99,11 +99,30 @@ public class NewOrder extends Procedure {
             String l_shipmode = "RAIL";
             String l_comment = rand.astring(10, 43);
 
+            //PreparedStatement insertLineItemPS = this.getPreparedStatement(conn, insertLineItemStmt);
+            String sql = TPCCLikeUtil.replaceParams(insertLineItemStmt.getSQL(),
+                    new int[]{6,7,8,9,10,11,12,13,14,15,16},
+                    new String[]{
+                            String.valueOf(l_extendedprice),
+                            String.valueOf(l_discount),
+                            String.valueOf(l_tax),
+                            String.format("'%s'", l_returnflag),
+                            String.format("'%s'", l_linestatus),
+                            String.format("'%s'::date", l_shipdate),
+                            String.format("'%s'::date", l_commitdate),
+                            String.format("'%s'::date", l_receiptdate),
+                            String.format("'%s'", l_shipinstruct),
+                            String.format("'%s'", l_shipmode),
+                            String.format("'%s'", l_comment),
+                    });
+            insertLineItemPS = conn.prepareStatement(sql);
+
             insertLineItemPS.setInt(1, l_orderkey);
             insertLineItemPS.setInt(2, l_partkey);
             insertLineItemPS.setInt(3, l_suppkey);
             insertLineItemPS.setInt(4, l_linenumber);
             insertLineItemPS.setInt(5, l_quantity);
+            /*
             insertLineItemPS.setDouble(6, l_extendedprice);
             insertLineItemPS.setDouble(7, l_discount);
             insertLineItemPS.setDouble(8, l_tax);
@@ -115,6 +134,7 @@ public class NewOrder extends Procedure {
             insertLineItemPS.setString(14, l_shipinstruct);
             insertLineItemPS.setString(15, l_shipmode);
             insertLineItemPS.setString(16, l_comment);
+            */
             insertLineItemPS.addBatch();
 
             o_totalprice += l_extendedprice * (1 + l_tax) * (1 - l_discount);
@@ -125,7 +145,7 @@ public class NewOrder extends Procedure {
 
 
         // then we load the order
-        PreparedStatement insertOrderPS = this.getPreparedStatement(conn, insertOrderStmt);
+
         int o_orderkey = orderkey;
         int o_custkey = util.getRandomCustKey(conn);
         String o_orderstatus = "F";
@@ -137,22 +157,34 @@ public class NewOrder extends Procedure {
         int o_shippriority = rand.number(1, 5);
         String o_comment = rand.astring(19, 78);
 
+        //PreparedStatement insertOrderPS = this.getPreparedStatement(conn, insertOrderStmt);
+        String sql = TPCCLikeUtil.replaceParams(insertOrderStmt.getSQL(),
+                new int[]{3,4,5,7,9},
+                new String[]{
+                        String.format("'%s'", o_orderstatus),
+                        String.valueOf(o_totalprice),
+                        String.format("'%s'::date", o_orderdate),
+                        String.format("'%s'", o_clerk),
+                        String.format("'%s'", o_comment),
+                });
+        PreparedStatement insertOrderPS = conn.prepareStatement(sql);
+
         insertOrderPS.setInt(1, o_orderkey);
         insertOrderPS.setInt(2, o_custkey);
-        insertOrderPS.setString(3, o_orderstatus);
-        insertOrderPS.setDouble(4, o_totalprice);
-        insertOrderPS.setDate(5, o_orderdate);
-        insertOrderPS.setInt(6, o_orderpriority);
-        insertOrderPS.setString(7, o_clerk);
-        insertOrderPS.setInt(8, o_shippriority);
-        insertOrderPS.setString(9, o_comment);
+        //insertOrderPS.setString(3, o_orderstatus);
+        //insertOrderPS.setDouble(4, o_totalprice);
+        //insertOrderPS.setDate(5, o_orderdate);
+        insertOrderPS.setInt(3, o_orderpriority);
+        //insertOrderPS.setString(7, o_clerk);
+        insertOrderPS.setInt(4, o_shippriority);
+        //insertOrderPS.setString(9, o_comment);
         insertOrderPS.addBatch();
 
         Order order = new Order(o_orderkey, o_custkey, o_totalprice);
 
         List<PreparedStatement> preparedStatements = new ArrayList<>();
-        preparedStatements.add(insertLineItemPS);
         preparedStatements.add(insertOrderPS);
+        preparedStatements.add(insertLineItemPS);
 
         return new NewOrderTransaction(preparedStatements, order, lineItems);
     }

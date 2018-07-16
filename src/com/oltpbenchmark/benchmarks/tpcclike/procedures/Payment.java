@@ -41,9 +41,15 @@ public class Payment extends Procedure {
         int c_custkey = util.getRandomCustKey(conn);
         double payment = rand.fixedPoint(2, 1.00, 5000.00);
 
-        PreparedStatement updateCustBalPS = getPreparedStatement(conn, updateCustBalStmt);
-        updateCustBalPS.setDouble(1, payment);
-        updateCustBalPS.setInt(2, c_custkey);
+        //PreparedStatement updateCustBalPS = getPreparedStatement(conn, updateCustBalStmt);
+        //updateCustBalPS.setDouble(1, payment);
+        String sql = TPCCLikeUtil.replaceParams(updateCustBalStmt.getSQL(),
+                new int[]{1},
+                new String[]{
+                   String.valueOf(payment)
+                });
+        PreparedStatement updateCustBalPS = conn.prepareStatement(sql);
+        updateCustBalPS.setInt(1, c_custkey);
         updateCustBalPS.addBatch();
 
         List<PreparedStatement> preparedStatements = new ArrayList<>();
