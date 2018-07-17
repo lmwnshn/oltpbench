@@ -20,6 +20,16 @@ public class TPCCLikeUtil {
         return new Date(cal.getTimeInMillis());
     }
 
+    /**
+     * Replaces instances of ? in the sql string at the given locations with the given params.
+     * <p>
+     * We use JDBC 1-indexing.
+     *
+     * @param sql    SQL string
+     * @param locs   instances of ? to be replaced
+     * @param params replacement values
+     * @return new SQL string with substitutions made
+     */
     public static String replaceParams(String sql, int[] locs, String[] params) {
         ArrayList<Integer> splits = new ArrayList<>();
         {

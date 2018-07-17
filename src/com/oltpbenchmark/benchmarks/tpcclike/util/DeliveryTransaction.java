@@ -2,23 +2,16 @@ package com.oltpbenchmark.benchmarks.tpcclike.util;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Queue;
 
 public class DeliveryTransaction extends Transaction {
 
-    private int numOrders;
-
     /**
-     * We expect [UPDATE, SELECT, UPDATE]* for preparedStatements
-     * @param preparedStatements
-     * @param numOrders
+     * We expect the pattern of [UPDATE, SELECT, UPDATE]* for prepared statements.
      */
-    public DeliveryTransaction(List<PreparedStatement> preparedStatements, int numOrders) {
+    public DeliveryTransaction(List<PreparedStatement> preparedStatements) {
         super(preparedStatements);
-        this.numOrders = numOrders;
     }
 
     @Override
@@ -34,7 +27,4 @@ public class DeliveryTransaction extends Transaction {
         }
     }
 
-    public int getNumOrders() {
-        return numOrders;
-    }
 }

@@ -3,22 +3,24 @@ package com.oltpbenchmark.benchmarks.tpcclike.procedures;
 import com.oltpbenchmark.api.Procedure;
 import com.oltpbenchmark.api.SQLStmt;
 import com.oltpbenchmark.benchmarks.tpcclike.util.PartSupp;
-import com.oltpbenchmark.benchmarks.tpcclike.util.TPCCLikeUtil;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class Util extends Procedure {
 
-    // these SQLStmts use LIMIT to prefetch as RANDOM() can be slow
+    // we want to prefetch results because RANDOM() on every call will be really slow
 
     private SQLStmt getRandPartSuppStmt = new SQLStmt(
-            "SELECT ps_partkey, ps_suppkey FROM partsupp ORDER BY RANDOM() LIMIT 10000"
+            "SELECT ps_partkey, ps_suppkey FROM partsupp ORDER BY RAND() LIMIT ?"
     );
 
     private SQLStmt getRandCustKeyStmt = new SQLStmt(
-            "SELECT c_custkey FROM customer ORDER BY RANDOM() LIMIT 10000"
+            "SELECT c_custkey FROM customer ORDER BY RAND() LIMIT ?"
     );
 
     private SQLStmt getRetailPriceStmt = new SQLStmt(
@@ -39,6 +41,9 @@ public class Util extends Procedure {
         this.custKeyPrefetch = new LinkedList<>();
     }
 
+    // the hyper bug in this case:
+    // doesn't recognize setInt for argument to LIMIT
+
     /**
      * Returns a random PartSupp.
      *
@@ -46,13 +51,21 @@ public class Util extends Procedure {
      * @return random PartSupp
      * @throws SQLException
      */
-    PartSupp getRandomPartSupp(Connection conn) throws SQLException {
+    PartSupp getRandomPartSupp(Connection conn, boolean hyperHack) throws SQLException {
         if (!partSuppPrefetch.isEmpty()) {
             return partSuppPrefetch.remove();
         }
 
-        PreparedStatement ps = this.getPreparedStatement(conn, getRandPartSuppStmt);
-        //ps.setInt(1, numPrefetch);
+        PreparedStatement ps;
+        if (hyperHack) {
+            ps = conn.prepareStatement(
+                    "SELECT ps_partkey, ps_suppkey FROM partsupp ORDER BY RANDOM() LIMIT 10000"
+            );
+        } else {
+            ps = this.getPreparedStatement(conn, getRandPartSuppStmt);
+            ps.setInt(1, numPrefetch);
+        }
+
         ResultSet rs = ps.executeQuery();
 
         while (rs.next()) {
@@ -73,13 +86,20 @@ public class Util extends Procedure {
      * @return random customer key
      * @throws SQLException
      */
-    int getRandomCustKey(Connection conn) throws SQLException {
+    int getRandomCustKey(Connection conn, boolean hyperHack) throws SQLException {
         if (!custKeyPrefetch.isEmpty()) {
             return custKeyPrefetch.remove();
         }
 
-        PreparedStatement ps = this.getPreparedStatement(conn, getRandCustKeyStmt);
-        //ps.setInt(1, numPrefetch);
+        PreparedStatement ps;
+        if (hyperHack) {
+            ps = conn.prepareStatement(
+                    "SELECT c_custkey FROM customer ORDER BY RANDOM() LIMIT 10000"
+            );
+        } else {
+            ps = this.getPreparedStatement(conn, getRandCustKeyStmt);
+            ps.setInt(1, numPrefetch);
+        }
         ResultSet rs = ps.executeQuery();
 
         while (rs.next()) {

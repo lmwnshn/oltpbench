@@ -1,10 +1,7 @@
 package com.oltpbenchmark.benchmarks.tpcclike.util;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Queue;
 
 public class NewOrderTransaction extends Transaction {
 
@@ -25,5 +22,5 @@ public class NewOrderTransaction extends Transaction {
     public List<LineItem> getLineItems() {
         return lineItems;
     }
-    
+
 }

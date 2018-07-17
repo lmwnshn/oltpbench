@@ -32,44 +32,91 @@ public class Delivery extends Procedure {
     /**
      * Generates a list of SQL commands that make up a single delivery transaction.
      * <p>
-     * Specification:
+     * Delivery Specification:
      * <p>
-     * 3. delivery transactions:
-     * It contains:
-     * the date of "today" for this transaction
-     * an integer "num" denotes the number of orders that will be shipped "today"
+     * Dequeue "num" orders from the order queue, where num = rand [1, min(|orderQueue|, 10)]
+     * For each order, update the corresponding LINEITEM shipdate to given transaction date,
+     * and increase the balance of the corresponding CUSTOMER by the order's total price.
+     * <p>
+     * In theory, the order queue should only store the order key.
+     * This order key should be used to look up the order details.
+     * We ensure we will look up the order anyway, but we pre-populate what we know to be
+     * the result to minimize the time spent in Java during the execution phase.
      *
-     * @param conn      connection
-     * @param rand      random number generator
-     * @param txnDate   date of delivery
-     * @param maxOrders maximum number of deliverable orders
+     * @param conn         connection
+     * @param rand         random number generator
+     * @param orderQueue   queue of orders
+     * @param deliveryDate date of delivery
+     * @param hyperHack    true if we should use the hyper hack
      * @return delivery transaction
      * @throws SQLException
      */
     public Transaction generateTransaction(Connection conn, RandomGenerator rand,
                                            Queue<NewOrderTransaction> orderQueue,
-                                           Date txnDate, int maxOrders)
+                                           Date deliveryDate, boolean hyperHack)
             throws SQLException {
+
+        if (hyperHack) {
+            return hyperStatements(conn, rand, orderQueue, deliveryDate);
+        }
+
+        // we only deliver up to 10 orders on a given day
+        int maxOrders = orderQueue.size();
         int numOrders = maxOrders == 0 ? 0 : rand.number(1, Math.min(maxOrders, 10));
 
-        /*
-        3. delivery transactions:
-        dequeue "num" orders from Q_neworder
-        for each of the "num" orders:
-            update the corresponding tuple in LINEITEM table, with "shipdate" updated to "today"
-            if there is an index with primary key as the shipdate, add this lineitem to that index
-            similarly, if there is any indices maintaining lineitems, update the shipdate of this lineitem in those indices
-            increase the balance of the correponding customer by "totalprice" of that order
-         */
+        // these prepared statements will be our transaction
+        List<PreparedStatement> prepList = new ArrayList<>();
+
+        for (int i = 0; i < numOrders; i++) {
+            NewOrderTransaction orderTxn = orderQueue.remove();
+            Order order = orderTxn.getOrder();
+
+            // prepare all the line items
+            PreparedStatement lineItemPS = getPreparedStatement(conn, updateLineItemStmt);
+            for (LineItem lineItem : orderTxn.getLineItems()) {
+                lineItemPS.setDate(1, deliveryDate);
+                lineItemPS.setInt(2, lineItem.getOrderKey());
+                lineItemPS.setInt(3, lineItem.getLineNumber());
+                lineItemPS.addBatch();
+            }
+
+            // simulate getting the order details
+            PreparedStatement getOrderCustPricePS = getPreparedStatement(conn, getOrderCustPriceStmt);
+            getOrderCustPricePS.setInt(1, order.getOrderKey());
+            getOrderCustPricePS.addBatch();
+
+            // update the customer
+            PreparedStatement updateCustBalPS = getPreparedStatement(conn, updateCustBalStmt);
+            updateCustBalPS.setDouble(1, order.getTotalPrice());
+            updateCustBalPS.setInt(2, order.getCustKey());
+            updateCustBalPS.addBatch();
+
+            // add the prepared statements corresponding to this transaction
+            prepList.add(lineItemPS);
+            prepList.add(getOrderCustPricePS);
+            prepList.add(updateCustBalPS);
+        }
+
+        return new DeliveryTransaction(prepList);
+    }
+
+    /**
+     * Avoids mixing PreparedStatement types
+     */
+    private DeliveryTransaction hyperStatements(Connection conn, RandomGenerator rand,
+                                                Queue<NewOrderTransaction> orderQueue,
+                                                Date txnDate)
+            throws SQLException {
+        int maxOrders = orderQueue.size();
+        int numOrders = maxOrders == 0 ? 0 : rand.number(1, Math.min(maxOrders, 10));
 
         List<PreparedStatement> prepList = new ArrayList<>();
 
         for (int i = 0; i < numOrders; i++) {
-            PreparedStatement lineItemPS = getPreparedStatement(conn, updateLineItemStmt);
-            PreparedStatement getOrderCustPricePS = getPreparedStatement(conn, getOrderCustPriceStmt);
-            PreparedStatement updateCustBalPS = getPreparedStatement(conn, updateCustBalStmt);
-
             NewOrderTransaction orderTxn = orderQueue.remove();
+            Order order = orderTxn.getOrder();
+
+            PreparedStatement lineItemPS = getPreparedStatement(conn, updateLineItemStmt);
             for (LineItem lineItem : orderTxn.getLineItems()) {
                 String sql = TPCCLikeUtil.replaceParams(updateLineItemStmt.getSQL(),
                         new int[]{1},
@@ -77,23 +124,23 @@ public class Delivery extends Procedure {
                                 String.format("'%s'::date", txnDate)
                         });
                 lineItemPS = conn.prepareStatement(sql);
-                //lineItemPS.setDate(1, txnDate);
                 lineItemPS.setInt(1, lineItem.getOrderKey());
                 lineItemPS.setInt(2, lineItem.getLineNumber());
                 lineItemPS.addBatch();
             }
-            Order order = orderTxn.getOrder();
-            // we will simulate getting the order later
+
+            PreparedStatement getOrderCustPricePS = getPreparedStatement(conn, getOrderCustPriceStmt);
             getOrderCustPricePS.setInt(1, order.getOrderKey());
             getOrderCustPricePS.addBatch();
-            // before we update the cust accordingly
+
             String sql = TPCCLikeUtil.replaceParams(updateCustBalStmt.getSQL(),
                     new int[]{1},
                     new String[]{
                             String.valueOf(order.getTotalPrice())
                     });
+
+            PreparedStatement updateCustBalPS;
             updateCustBalPS = conn.prepareStatement(sql);
-//            updateCustBalPS.setDouble(1, order.getTotalPrice());
             updateCustBalPS.setInt(1, order.getCustKey());
             updateCustBalPS.addBatch();
 
@@ -102,9 +149,7 @@ public class Delivery extends Procedure {
             prepList.add(updateCustBalPS);
         }
 
-
-
-        return new DeliveryTransaction(prepList, numOrders);
+        return new DeliveryTransaction(prepList);
     }
 
 }

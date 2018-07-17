@@ -9,13 +9,13 @@ DROP TABLE IF EXISTS lineitem CASCADE;
 
 CREATE TABLE region  ( r_regionkey  INTEGER NOT NULL,
                        r_name       CHAR(25) NOT NULL,
-                       r_comment    VARCHAR(152),
+                       r_comment    VARCHAR(152) NOT NULL,
                        PRIMARY KEY (r_regionkey));
 
 CREATE TABLE nation  ( n_nationkey  INTEGER NOT NULL,
                        n_name       CHAR(25) NOT NULL,
                        n_regionkey  INTEGER NOT NULL,
-                       n_comment    VARCHAR(152),
+                       n_comment    VARCHAR(152) NOT NULL,
                        PRIMARY KEY (n_nationkey),
                        FOREIGN KEY (n_regionkey) REFERENCES region (r_regionkey));
 
@@ -43,7 +43,7 @@ CREATE TABLE supplier ( s_suppkey     INTEGER NOT NULL,
 CREATE TABLE partsupp ( ps_partkey     INTEGER NOT NULL,
                         ps_suppkey     INTEGER NOT NULL,
                         ps_availqty    INTEGER NOT NULL,
-                        ps_supplycost  DECIMAL(15,2)  NOT NULL,
+                        ps_supplycost  DECIMAL(15,2) NOT NULL,
                         ps_comment     VARCHAR(199) NOT NULL,
                         PRIMARY KEY (ps_partkey, ps_suppkey),
                         FOREIGN KEY (ps_partkey) REFERENCES part (p_partkey),
@@ -54,7 +54,7 @@ CREATE TABLE customer ( c_custkey     INTEGER NOT NULL,
                         c_address     VARCHAR(40) NOT NULL,
                         c_nationkey   INTEGER NOT NULL,
                         c_phone       CHAR(15) NOT NULL,
-                        c_acctbal     DECIMAL(15,2)   NOT NULL,
+                        c_acctbal     DECIMAL(15,2) NOT NULL,
                         c_mktsegment  CHAR(10) NOT NULL,
                         c_comment     VARCHAR(117) NOT NULL,
                         PRIMARY KEY (c_custkey),

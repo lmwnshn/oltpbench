@@ -11,15 +11,12 @@ import com.oltpbenchmark.benchmarks.tpcclike.util.NewOrderTransaction;
 import com.oltpbenchmark.benchmarks.tpcclike.util.PaymentTransaction;
 import com.oltpbenchmark.benchmarks.tpcclike.util.Transaction;
 import com.oltpbenchmark.types.TransactionStatus;
-import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class TPCCLikeWorker extends Worker<TPCCLikeBenchmark> {
-
-    private static final Logger LOG = Logger.getLogger(TPCCLikeWorker.class);
 
     private Queue<Transaction> transactions;
 
@@ -31,6 +28,8 @@ public class TPCCLikeWorker extends Worker<TPCCLikeBenchmark> {
     @Override
     protected void initialize() {
         Queue<TransactionType> workload = new LinkedList<>();
+
+        // we will rig the workload that we get
         for (Transaction transaction : transactions) {
             if (transaction instanceof NewOrderTransaction) {
                 workload.add(transactionTypes.getType(NewOrder.class));
@@ -41,6 +40,8 @@ public class TPCCLikeWorker extends Worker<TPCCLikeBenchmark> {
             }
         }
         this.setWorkload(workload);
+
+        // we want transactions
         try {
             conn.setAutoCommit(false);
         } catch (SQLException e) {
