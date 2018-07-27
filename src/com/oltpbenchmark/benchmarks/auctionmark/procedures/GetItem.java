@@ -56,7 +56,7 @@ public class GetItem extends Procedure {
     // -----------------------------------------------------------------
     
     public Object[][] run(Connection conn, Timestamp benchmarkTimes[],
-                          long item_id, long seller_id) throws SQLException {
+                          String item_id, long seller_id) throws SQLException {
         PreparedStatement item_stmt = this.getPreparedStatement(conn, getItem, item_id, seller_id);
         ResultSet item_results = item_stmt.executeQuery();
         if (item_results.next() == false) {

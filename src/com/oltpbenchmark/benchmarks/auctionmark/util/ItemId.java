@@ -49,23 +49,33 @@ public class ItemId extends CompositeId {
         this(new UserId(seller_id), item_ctr);
     }
     
-    public ItemId(long composite_id) {
-        this.decode(composite_id);
+    public ItemId(String composite_id) {
+        this.decodeBig(composite_id);
     }
     
     @Override
     public long encode() {
-        return (this.encode(COMPOSITE_BITS, COMPOSITE_POWS));
+        throw new RuntimeException("ItemId does not support encode()");
     }
+
     @Override
     public void decode(long composite_id) {
-        long values[] = super.decode(composite_id, COMPOSITE_BITS, COMPOSITE_POWS);
-        this.seller_id = new UserId(values[0]);
-        this.item_ctr = (int)values[1]-1;
+        throw new RuntimeException("ItemId does not support decode()");
     }
+
+    public String encodeBig() {
+        return String.format("%d%s%d", seller_id.encode(), ID_DELIMITER, item_ctr);
+    }
+
+    public void decodeBig(String composite_id) {
+        String[] parts = composite_id.split(ID_DELIMITER);
+        this.seller_id = new UserId(Long.valueOf(parts[0]));
+        this.item_ctr = Integer.valueOf(parts[1]);
+    }
+
     @Override
     public long[] toArray() {
-        return (new long[]{ this.seller_id.encode(), this.item_ctr+1 });
+        throw new RuntimeException("ItemId does not support toArray()");
     }
     
     /**
@@ -88,11 +98,7 @@ public class ItemId extends CompositeId {
     public String toString() {
         return ("ItemId<" + this.item_ctr + "-" + this.seller_id + "/" + this.seller_id.encode() + ">");
     }
-    
-    public static String toString(long itemId) {
-        return new ItemId(itemId).toString();
-    }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj)

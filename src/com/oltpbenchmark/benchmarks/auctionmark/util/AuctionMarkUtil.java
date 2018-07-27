@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 
+import com.oltpbenchmark.util.CompositeId;
 import org.apache.log4j.Logger;
 
 import com.oltpbenchmark.benchmarks.auctionmark.AuctionMarkConstants;
@@ -62,15 +63,8 @@ public abstract class AuctionMarkUtil {
      * @param idx
      * @return
      */
-    public static long getUniqueElementId(long item_id, int idx) {
-        // The idx cannot be more than 7bits
-        assert(idx >= 0 && idx <= 128) :
-            String.format("Invalid element idx %d", idx);
-        long id = ((long) idx << 56) | (item_id & ITEM_ID_MASK);
-        assert(id >= 0) :
-            String.format("Invalid negative element id %d [item_id=%d, idx=%d]",
-                          id, item_id, idx);
-        return (id);
+    public static String getUniqueElementId(String item_id, int idx) {
+        return String.format("%s%s%d", item_id, CompositeId.ID_DELIMITER, idx);
     }
 
     /**

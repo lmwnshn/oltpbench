@@ -177,7 +177,7 @@ CREATE TABLE global_attribute_value (
 -- ================================================================
 DROP TABLE IF EXISTS item CASCADE;
 CREATE TABLE item (
-    i_id                BIGINT NOT NULL,
+    i_id                VARCHAR(100) NOT NULL,
     i_u_id              BIGINT NOT NULL REFERENCES useracct (u_id),
     i_c_id              BIGINT NOT NULL REFERENCES category (c_id),
     i_name              VARCHAR(100),
@@ -215,8 +215,8 @@ CREATE INDEX IDX_ITEM_SELLER ON item (i_u_id);
 -- ================================================================
 DROP TABLE IF EXISTS item_attribute CASCADE;
 CREATE TABLE item_attribute (
-    ia_id               BIGINT NOT NULL,
-    ia_i_id             BIGINT NOT NULL,
+    ia_id               VARCHAR(100) NOT NULL,
+    ia_i_id             VARCHAR(100) NOT NULL,
     ia_u_id             BIGINT NOT NULL,
     ia_gav_id           BIGINT NOT NULL,
     ia_gag_id           BIGINT NOT NULL,
@@ -235,8 +235,8 @@ CREATE TABLE item_attribute (
 -- ================================================================
 DROP TABLE IF EXISTS item_image CASCADE;
 CREATE TABLE item_image (
-    ii_id               BIGINT NOT NULL,
-    ii_i_id             BIGINT NOT NULL,
+    ii_id               VARCHAR(100) NOT NULL,
+    ii_i_id             VARCHAR(100) NOT NULL,
     ii_u_id             BIGINT NOT NULL,
     ii_sattr0            VARCHAR(128) NOT NULL,
     FOREIGN KEY (ii_i_id, ii_u_id) REFERENCES item (i_id, i_u_id) ON DELETE CASCADE,
@@ -256,7 +256,7 @@ CREATE TABLE item_image (
 DROP TABLE IF EXISTS item_comment CASCADE;
 CREATE TABLE item_comment (
     ic_id               BIGINT NOT NULL,
-    ic_i_id             BIGINT NOT NULL,
+    ic_i_id             VARCHAR(100) NOT NULL,
     ic_u_id             BIGINT NOT NULL,
     ic_buyer_id         BIGINT NOT NULL REFERENCES useracct (u_id),
     ic_question         VARCHAR(128) NOT NULL,
@@ -282,7 +282,7 @@ CREATE TABLE item_comment (
 DROP TABLE IF EXISTS item_bid CASCADE;
 CREATE TABLE item_bid (
     ib_id               BIGINT NOT NULL,
-    ib_i_id             BIGINT NOT NULL,
+    ib_i_id             VARCHAR(100) NOT NULL,
     ib_u_id             BIGINT NOT NULL,
     ib_buyer_id         BIGINT NOT NULL REFERENCES useracct (u_id),
     ib_bid                FLOAT NOT NULL,
@@ -299,10 +299,10 @@ CREATE TABLE item_bid (
 -- ================================================================
 DROP TABLE IF EXISTS item_max_bid CASCADE;
 CREATE TABLE item_max_bid (
-    imb_i_id            BIGINT NOT NULL,
+    imb_i_id            VARCHAR(100) NOT NULL,
     imb_u_id            BIGINT NOT NULL,
     imb_ib_id           BIGINT NOT NULL,
-    imb_ib_i_id         BIGINT NOT NULL,
+    imb_ib_i_id         VARCHAR(100) NOT NULL,
     imb_ib_u_id         BIGINT NOT NULL,
     imb_created         TIMESTAMP,
     imb_updated         TIMESTAMP,
@@ -320,9 +320,9 @@ CREATE TABLE item_max_bid (
 -- ================================================================
 DROP TABLE IF EXISTS item_purchase CASCADE;
 CREATE TABLE item_purchase (
-    ip_id               BIGINT NOT NULL,
+    ip_id               VARCHAR(100) NOT NULL,
     ip_ib_id            BIGINT NOT NULL,
-    ip_ib_i_id          BIGINT NOT NULL,
+    ip_ib_i_id          VARCHAR(100) NOT NULL,
     ip_ib_u_id          BIGINT NOT NULL,
     ip_date             TIMESTAMP,
     FOREIGN KEY (ip_ib_id, ip_ib_i_id, ip_ib_u_id) REFERENCES item_bid (ib_id, ib_i_id, ib_u_id) ON DELETE CASCADE,
@@ -343,7 +343,7 @@ CREATE TABLE item_purchase (
 DROP TABLE IF EXISTS useracct_feedback CASCADE;
 CREATE TABLE useracct_feedback (
     uf_u_id             BIGINT NOT NULL REFERENCES useracct (u_id),
-    uf_i_id             BIGINT NOT NULL,
+    uf_i_id             VARCHAR(100) NOT NULL,
     uf_i_u_id           BIGINT NOT NULL,
     uf_from_id          BIGINT NOT NULL REFERENCES useracct (u_id),
     uf_rating           INT NOT NULL,
@@ -361,11 +361,11 @@ CREATE TABLE useracct_feedback (
 DROP TABLE IF EXISTS useracct_item CASCADE;
 CREATE TABLE useracct_item (
     ui_u_id             BIGINT NOT NULL REFERENCES useracct (u_id),
-    ui_i_id             BIGINT NOT NULL,
+    ui_i_id             VARCHAR(100) NOT NULL,
     ui_i_u_id           BIGINT NOT NULL,
-    ui_ip_id            BIGINT,
+    ui_ip_id            VARCHAR(100),
     ui_ip_ib_id         BIGINT,
-    ui_ip_ib_i_id       BIGINT,
+    ui_ip_ib_i_id       VARCHAR(100),
     ui_ip_ib_u_id       BIGINT,
     ui_created          TIMESTAMP,
     FOREIGN KEY (ui_i_id, ui_i_u_id) REFERENCES item (i_id, i_u_id) ON DELETE CASCADE,
@@ -381,7 +381,7 @@ CREATE TABLE useracct_item (
 DROP TABLE IF EXISTS useracct_watch CASCADE;
 CREATE TABLE useracct_watch (
     uw_u_id             BIGINT NOT NULL REFERENCES useracct (u_id),
-    uw_i_id             BIGINT NOT NULL,
+    uw_i_id             VARCHAR(100) NOT NULL,
     uw_i_u_id           BIGINT NOT NULL,
     uw_created          TIMESTAMP,
     FOREIGN KEY (uw_i_id, uw_i_u_id) REFERENCES item (i_id, i_u_id) ON DELETE CASCADE,

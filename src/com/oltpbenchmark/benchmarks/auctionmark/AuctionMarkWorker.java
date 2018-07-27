@@ -67,7 +67,7 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
     
     private final Thread closeAuctions_checker;
 
-    protected static final Map<Long, Integer> ip_id_cntrs = new HashMap<Long, Integer>(); 
+    protected static final Map<String, Integer> ip_id_cntrs = new HashMap<String, Integer>();
     
     // --------------------------------------------------------------------
     // CLOSE_AUCTIONS CHECKER
@@ -421,7 +421,7 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
     @SuppressWarnings("unused")
     public ItemId processItemRecord(Object row[]) {
         int col = 0;
-        ItemId i_id = new ItemId(SQLUtil.getLong(row[col++]));  // i_id
+        ItemId i_id = new ItemId((String) row[col++]);  // i_id
         long i_u_id = SQLUtil.getLong(row[col++]);              // i_u_id
         String i_name = (String)row[col++];                     // i_name
         double i_current_price = SQLUtil.getDouble(row[col++]); // i_current_price
@@ -483,7 +483,7 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
         Timestamp benchmarkTimes[] = this.getTimestampParameterArray();
         ItemInfo itemInfo = profile.getRandomAvailableItemId();
         
-        Object results[][] = proc.run(conn, benchmarkTimes, itemInfo.itemId.encode(),
+        Object results[][] = proc.run(conn, benchmarkTimes, itemInfo.itemId.encodeBig(),
                                                             itemInfo.getSellerId().encode());
         conn.commit();
         
@@ -647,7 +647,7 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
             maxBid = profile.rng.fixedPoint(2, bid, (bid * (1 + (AuctionMarkConstants.ITEM_BID_PERCENT_STEP / 2))));
         }
 
-        Object results[] = proc.run(conn, benchmarkTimes, itemInfo.itemId.encode(),
+        Object results[] = proc.run(conn, benchmarkTimes, itemInfo.itemId.encodeBig(),
                                                           sellerId.encode(),
                                                           buyerId.encode(),
                                                           maxBid,
@@ -673,7 +673,7 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
                                               AuctionMarkConstants.ITEM_COMMENT_LENGTH_MAX);
         
         Object results[] = proc.run(conn, benchmarkTimes,
-                                          itemInfo.itemId.encode(),
+                                          itemInfo.itemId.encodeBig(),
                                           sellerId.encode(),
                                           buyerId.encode(),
                                           question);
@@ -697,13 +697,13 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
         assert(cr != null);
         
         long commentId = cr.commentId.longValue();
-        ItemId itemId = new ItemId(cr.itemId.longValue());
+        ItemId itemId = new ItemId(cr.itemId.toString());
         UserId sellerId = itemId.getSellerId();
         assert(sellerId.encode() == cr.sellerId);
         String response = profile.rng.astring(AuctionMarkConstants.ITEM_COMMENT_LENGTH_MIN,
                                               AuctionMarkConstants.ITEM_COMMENT_LENGTH_MAX);
 
-        proc.run(conn, benchmarkTimes, itemId.encode(),
+        proc.run(conn, benchmarkTimes, itemId.encodeBig(),
                                        sellerId.encode(),
                                        commentId,
                                        response);
@@ -723,7 +723,7 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
         UserId buyerId = profile.getRandomBuyerId(sellerId);
         long rating = (long) profile.rng.number(-1, 1);
         String feedback = profile.rng.astring(10, 80);
-        
+
         long user_id;
         long from_id;
         if (profile.rng.nextBoolean()) {
@@ -735,7 +735,7 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
         }
         
         proc.run(conn, benchmarkTimes, user_id,
-                                       itemInfo.itemId.encode(),
+                                       itemInfo.itemId.encodeBig(),
                                        sellerId.encode(),
                                        from_id,
                                        rating,
@@ -786,7 +786,7 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
 
         Object results[] = null;
         try {
-            long itemIdEncoded = itemId.encode();
+            String itemIdEncoded = itemId.encodeBig();
             results = proc.run(conn, benchmarkTimes, itemIdEncoded, sellerId.encode(),
                                                      categoryId, name, description,
                                                      duration, initial_price, attributes,
@@ -810,16 +810,16 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
     protected boolean executeNewPurchase(NewPurchase proc) throws SQLException {
         Timestamp benchmarkTimes[] = this.getTimestampParameterArray();
         ItemInfo itemInfo = profile.getRandomWaitForPurchaseItem();
-        long encodedItemId = itemInfo.itemId.encode();
+        String encodedItemId = itemInfo.itemId.encodeBig();
         UserId sellerId = itemInfo.getSellerId();
         double buyer_credit = 0d;
 
-	Integer ip_id_cnt = ip_id_cntrs.get(new Long(encodedItemId));
+	Integer ip_id_cnt = ip_id_cntrs.get(encodedItemId);
 	if (ip_id_cnt == null) {
 	    ip_id_cnt = new Integer(0);
 	}
 	
-        long ip_id = AuctionMarkUtil.getUniqueElementId(encodedItemId,
+        String ip_id = AuctionMarkUtil.getUniqueElementId(encodedItemId,
                                                         ip_id_cnt.intValue());
 	ip_id_cntrs.put(encodedItemId, (ip_id_cnt < 127) ? ip_id_cnt + 1 : 0);
         
@@ -873,7 +873,7 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
             add_attribute[1] = gav_id.encode();
         }
         
-        proc.run(conn, benchmarkTimes, itemInfo.itemId.encode(),
+        proc.run(conn, benchmarkTimes, itemInfo.itemId.encodeBig(),
                                        sellerId.encode(),
                                        description,
                                        delete_attribute,

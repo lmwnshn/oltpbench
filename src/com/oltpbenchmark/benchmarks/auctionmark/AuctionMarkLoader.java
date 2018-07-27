@@ -549,8 +549,12 @@ public class AuctionMarkLoader extends Loader<AuctionMarkBenchmark> {
             
             // Convert all CompositeIds into their long encodings
             for (int i = 0; i < cols; i++) {
-                if (row[i] != null && row[i] instanceof CompositeId) {
-                    row[i] = ((CompositeId)row[i]).encode();
+                if (row[i] != null) {
+                    if (row[i] instanceof ItemId) {
+                        row[i] = ((ItemId) row[i]).encodeBig();
+                    } else if (row[i] instanceof CompositeId) {
+                        row[i] = ((CompositeId) row[i]).encode();
+                    }
                 }
             } // FOR
             

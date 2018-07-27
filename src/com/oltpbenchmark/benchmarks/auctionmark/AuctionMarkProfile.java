@@ -446,7 +446,7 @@ public class AuctionMarkProfile {
         int ctr = 0;
         while (vt.next()) {
             int col = 1;
-            ItemId i_id = new ItemId(vt.getLong(col++));
+            ItemId i_id = new ItemId(vt.getString(col++));
             double i_current_price = vt.getDouble(col++);
             Timestamp i_end_date = vt.getTimestamp(col++);
             int i_num_bids = (int)vt.getLong(col++);
@@ -822,7 +822,7 @@ public class AuctionMarkProfile {
         }
         
         if (LOG.isTraceEnabled())
-            LOG.trace(String.format("%s - #%d [%s]", new_status, itemInfo.itemId.encode(), itemInfo.getEndDate()));
+            LOG.trace(String.format("%s - #%s [%s]", new_status, itemInfo.itemId.encodeBig(), itemInfo.getEndDate()));
         
         return (new_status);
     }

@@ -151,7 +151,7 @@ public class NewItem extends Procedure {
 	 * the USER record to add the listing fee to the seller's balance.
 	 */
     public Object[] run(Connection conn, Timestamp benchmarkTimes[],
-                        long item_id, long seller_id, long category_id,
+                        String item_id, long seller_id, long category_id,
                         String name, String description, long duration, double initial_price, String attributes,
                         long gag_ids[], long gav_ids[], String images[]) throws SQLException {
         final Timestamp currentTime = AuctionMarkUtil.getProcTimestamp(benchmarkTimes);
@@ -253,8 +253,8 @@ public class NewItem extends Procedure {
         stmt = this.getPreparedStatement(conn, insertItemAttribute);
         for (int i = 0; i < gav_ids.length; i++) {
             int param = 1;
-            stmt.setLong(param++, AuctionMarkUtil.getUniqueElementId(item_id, i));
-            stmt.setLong(param++, item_id);
+            stmt.setString(param++, AuctionMarkUtil.getUniqueElementId(item_id, i));
+            stmt.setString(param++, item_id);
             stmt.setLong(param++, seller_id);
             stmt.setLong(param++, gag_ids[i]);
             stmt.setLong(param++, gag_ids[i]);
@@ -266,8 +266,8 @@ public class NewItem extends Procedure {
         stmt = this.getPreparedStatement(conn, insertImage); 
         for (int i = 0; i < images.length; i++) {
             int param = 1;
-            stmt.setLong(param++, AuctionMarkUtil.getUniqueElementId(item_id, i));
-            stmt.setLong(param++, item_id);
+            stmt.setString(param++, AuctionMarkUtil.getUniqueElementId(item_id, i));
+            stmt.setString(param++, item_id);
             stmt.setLong(param++, seller_id);
             stmt.setString(param++, images[i]);
             updated = stmt.executeUpdate();

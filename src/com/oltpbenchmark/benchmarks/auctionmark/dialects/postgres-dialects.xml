@@ -65,7 +65,7 @@
         <procedure name="NewPurchase">
             <statement name="getItemMaxBid">SELECT * FROM item_max_bid WHERE imb_i_id = ? AND imb_u_id = ?</statement>
             <statement name="insertItemMaxBid">INSERT INTO item_max_bid (imb_i_id, imb_u_id, imb_ib_id, imb_ib_i_id, imb_ib_u_id, imb_created, imb_updated ) VALUES (?, ?, ?, ?, ?, ?, ? )</statement>
-            <statement name="getMaxBid">SELECT * FROM item_bid WHERE imb_i_id = ? AND imb_u_id = ?  ORDER BY ib_bid DESC LIMIT 1</statement>
+            <statement name="getMaxBid">SELECT * FROM item_bid WHERE ib_i_id = ? AND ib_u_id = ?  ORDER BY ib_bid DESC LIMIT 1</statement>
             <statement name="insertPurchase">INSERT INTO item_purchase(ip_id,ip_ib_id,ip_ib_i_id,ip_ib_u_id,ip_date) VALUES(?,?,?,?,?)</statement>
             <statement name="getBuyerInfo">SELECT u_id, u_balance FROM useracct WHERE u_id = ? </statement>
             <statement name="getItemInfo">SELECT i_num_bids, i_current_price, i_end_date, ib_id, ib_buyer_id, u_balance FROM item, item_max_bid, item_bid, useracct WHERE i_id = ? AND i_u_id = ? AND imb_i_id = i_id AND imb_u_id = i_u_id AND imb_ib_id = ib_id AND imb_ib_i_id = ib_i_id AND imb_ib_u_id = ib_u_id AND ib_buyer_id = u_id</statement>

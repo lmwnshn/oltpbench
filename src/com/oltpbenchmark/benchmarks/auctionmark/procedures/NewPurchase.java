@@ -47,7 +47,7 @@ public class NewPurchase extends Procedure {
     
     public final SQLStmt getMaxBid = new SQLStmt(
         "SELECT * FROM " + AuctionMarkConstants.TABLENAME_ITEM_BID +
-        " WHERE imb_i_id = ? AND imb_u_id = ? " +
+        " WHERE ib_i_id = ? AND ib_u_id = ? " +
         " ORDER BY ib_bid DESC LIMIT 1" 
     );
     
@@ -140,7 +140,7 @@ public class NewPurchase extends Procedure {
     // -----------------------------------------------------------------
     
     public Object[] run(Connection conn, Timestamp benchmarkTimes[],
-                        long item_id, long seller_id, long ip_id, double buyer_credit) throws SQLException {
+                        String item_id, long seller_id, String ip_id, double buyer_credit) throws SQLException {
         final Timestamp currentTime = AuctionMarkUtil.getProcTimestamp(benchmarkTimes);
         
         PreparedStatement stmt = null;

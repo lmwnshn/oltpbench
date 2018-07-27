@@ -78,7 +78,7 @@ public class UpdateItem extends Procedure {
 	 * uneditable (1.0%?); when this occurs, the transaction will abort.
 	 */
     public boolean run(Connection conn, Timestamp benchmarkTimes[],
-                       long item_id, long seller_id, String description,
+                       String item_id, long seller_id, String description,
                        boolean delete_attribute, long add_attribute[]) throws SQLException {
         final Timestamp currentTime = AuctionMarkUtil.getProcTimestamp(benchmarkTimes);
         
@@ -91,7 +91,7 @@ public class UpdateItem extends Procedure {
         // DELETE ITEM_ATTRIBUTE
         if (delete_attribute) {
             // Only delete the first (if it even exists)
-            long ia_id = AuctionMarkUtil.getUniqueElementId(item_id, 0);
+            String ia_id = AuctionMarkUtil.getUniqueElementId(item_id, 0);
             stmt = this.getPreparedStatement(conn, deleteItemAttribute, ia_id, item_id, seller_id);
             updated = stmt.executeUpdate();
         }
@@ -100,17 +100,16 @@ public class UpdateItem extends Procedure {
             assert(add_attribute.length == 2);
             long gag_id = add_attribute[0];
             long gav_id = add_attribute[1];
-            long ia_id = -1;
+            String ia_id;
             
             stmt = this.getPreparedStatement(conn, getMaxItemAttributeId, item_id, seller_id);
             ResultSet results = stmt.executeQuery();
             if (results.next()) {
-                ia_id = results.getLong(0);
+                ia_id = results.getString(0);
             } else {
                 ia_id = AuctionMarkUtil.getUniqueElementId(item_id, 0);
             }
             results.close();
-            assert(ia_id > 0);
 
             stmt = this.getPreparedStatement(conn, insertItemAttribute, ia_id, item_id, seller_id, gag_id, gav_id);
             updated = stmt.executeUpdate();

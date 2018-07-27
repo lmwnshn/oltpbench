@@ -29,7 +29,8 @@ import com.oltpbenchmark.util.json.JSONStringer;
  * @author pavlo
  */
 public abstract class CompositeId implements Comparable<CompositeId>, JSONSerializable {
-    
+
+    public static final String ID_DELIMITER = "-"; // composite IDs that need to be serialized as strings
     private transient int hashCode = -1;
     
     protected static final long[] compositeBitsPreCompute(int offset_bits[]) {
