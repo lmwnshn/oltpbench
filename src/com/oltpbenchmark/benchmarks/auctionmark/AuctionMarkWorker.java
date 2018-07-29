@@ -825,7 +825,7 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
 	
         String ip_id = AuctionMarkUtil.getUniqueElementId(encodedItemId,
                                                         ip_id_cnt.intValue());
-	ip_id_cntrs.put(encodedItemId, (ip_id_cnt < 127) ? ip_id_cnt + 1 : 0);
+	ip_id_cntrs.put(encodedItemId, ip_id_cnt + 1);
         
         // Whether the buyer will not have enough money
         if (itemInfo.hasCurrentPrice()) {
