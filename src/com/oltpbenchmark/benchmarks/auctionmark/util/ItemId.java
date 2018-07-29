@@ -50,6 +50,9 @@ public class ItemId extends CompositeId {
     }
     
     public ItemId(String composite_id) {
+        // I can't figure out why some IDs were loaded as XXXX--YY (repeated delimiter)
+        // it only appears to be of this form
+        composite_id = composite_id.replaceFirst("--", "-");
         this.decodeBig(composite_id);
     }
     
