@@ -552,7 +552,7 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
         if (get_comments) {
             vt = results[idx];
             assert(vt != null);
-            Long vals[] = new Long[3];
+            Object vals[] = new Object[3];
             int cols[] = { AuctionMarkConstants.ITEM_COLUMNS.length + 1, 1, 2 };
             for (Object row[] : vt) {
                 boolean valid = true;
@@ -561,14 +561,18 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
                         valid = false;
                         break;
                     }
-                    vals[i] = SQLUtil.getLong(row[i]);
+                    if (i == 0 || i == 2) {
+                        vals[i] = SQLUtil.getLong(row[i]);
+                    } else {
+                        vals[i] = row[i];
+                    }
                     if (vals[i] == null) {
                         valid = false;
                         break;
                     }
                 } // FOR
                 if (valid) {
-                    ItemCommentResponse cr = new ItemCommentResponse(vals[0], vals[1], vals[2]);
+                    ItemCommentResponse cr = new ItemCommentResponse((Long) vals[0], (String) vals[1], (Long) vals[2]);
                     profile.addPendingItemCommentResponse(cr);
                 }
             } // FOR
@@ -681,7 +685,7 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
         assert(results != null);
         
         profile.pending_commentResponses.add(new ItemCommentResponse(SQLUtil.getLong(results[0]),
-                                                                     SQLUtil.getLong(results[1]),
+                                                                     (String) results[1],
                                                                      SQLUtil.getLong(results[2])));
         return (true);
     }

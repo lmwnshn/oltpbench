@@ -467,7 +467,7 @@ public class AuctionMarkProfile {
         while (vt.next()) {
             int col = 1;
             long ic_id = vt.getLong(col++);
-            long ic_i_id = vt.getLong(col++);
+            String ic_i_id = vt.getString(col++);
             long ic_u_id = vt.getLong(col++);
             ItemCommentResponse cr = new ItemCommentResponse(ic_id, ic_i_id, ic_u_id);
             profile.pending_commentResponses.add(cr);
