@@ -165,7 +165,7 @@ public class NewBid extends Procedure {
         
 //        if (i_end_date.compareTo(currentTime) < 0 || i_status != ItemStatus.OPEN) {
 //            if (debug)
-//                LOG.debug(String.format("The auction for item %d has ended [status=%s]\nCurrentTime:\t%s\nActualEndDate:\t%s\nEstimatedEndDate:\t%s",
+//                LOG.debug(String.format("The auction for item %s has ended [status=%s]\nCurrentTime:\t%s\nActualEndDate:\t%s\nEstimatedEndDate:\t%s",
 //                                        item_id, i_status, currentTime, i_end_date, estimatedEndDate));
 //            throw new UserAbortException("Unable to bid on item: Auction has ended");
 //        }
@@ -215,7 +215,7 @@ public class NewBid extends Procedure {
                                                            currentBidId,
                                                            item_id,
                                                            seller_id).executeUpdate();
-                if (debug) LOG.debug(String.format("Increasing the max bid the highest bidder %s from %.2f to %.2f for Item %d",
+                if (debug) LOG.debug(String.format("Increasing the max bid the highest bidder %s from %.2f to %.2f for Item %s",
                                                    buyer_id, currentBidMax, newBid, item_id));
             }
             // Otherwise check whether this new bidder's max bid is greater than the current max
@@ -273,7 +273,7 @@ public class NewBid extends Procedure {
                                                                       currentTime,
                                                                       item_id,
                                                                       seller_id).executeUpdate();
-                    if (debug) LOG.debug(String.format("Changing new highest bidder of Item %d to %s [newMaxBid=%.2f > currentMaxBid=%.2f]",
+                    if (debug) LOG.debug(String.format("Changing new highest bidder of Item %s to %s [newMaxBid=%.2f > currentMaxBid=%.2f]",
                                          item_id, UserId.toString(buyer_id), newBid, currentBidMax));
                 }
             }

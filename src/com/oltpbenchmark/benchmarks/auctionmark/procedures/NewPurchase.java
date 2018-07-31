@@ -167,7 +167,7 @@ public class NewPurchase extends Procedure {
                                                                         currentTime,
                                                                         currentTime).executeUpdate();
             assert(updated == 1) :
-                String.format("Failed to update %s for Seller #%d's Item #%d",
+                String.format("Failed to update %s for Seller #%d's Item #%s",
                               AuctionMarkConstants.TABLENAME_ITEM_MAX_BID, seller_id, item_id);
         }
         results.close();
@@ -193,7 +193,7 @@ public class NewPurchase extends Procedure {
         // Make sure that the buyer has enough money to cover this charge
         // We can add in a credit for the buyer's account
         if (i_current_price > (buyer_credit + u_balance)) {
-            String msg = String.format("Buyer #%d does not have enough money in account to purchase Item #%d" +
+            String msg = String.format("Buyer #%d does not have enough money in account to purchase Item #%s" +
                                        "[maxBid=%.2f, balance=%.2f, credit=%.2f]",
                                        ib_buyer_id, item_id, i_current_price, u_balance, buyer_credit);
             throw new UserAbortException(msg);
@@ -206,7 +206,7 @@ public class NewPurchase extends Procedure {
         // Update item status to close
         updated = this.getPreparedStatement(conn, updateItem, currentTime, item_id, seller_id).executeUpdate();
         assert(updated == 1) :
-            String.format("Failed to update %s for Seller #%d's Item #%d",
+            String.format("Failed to update %s for Seller #%d's Item #%s",
                           AuctionMarkConstants.TABLENAME_ITEM, seller_id, item_id);
         
         // And update this the USERACT_ITEM record to link it to the new ITEM_PURCHASE record
@@ -219,7 +219,7 @@ public class NewPurchase extends Procedure {
                                                                       currentTime).executeUpdate();
         }
         assert(updated == 1) :
-            String.format("Failed to update %s for Buyer #%d's Item #%d",
+            String.format("Failed to update %s for Buyer #%d's Item #%s",
                           AuctionMarkConstants.TABLENAME_USERACCT_ITEM, ib_buyer_id, item_id);
         
         // Decrement the buyer's account 
