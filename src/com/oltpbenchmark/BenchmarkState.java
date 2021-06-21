@@ -45,8 +45,6 @@ public final class BenchmarkState {
         testStartNs = System.nanoTime();
     }
 
-    // Protected by this
-
     public long getTestStartNs() {
         return testStartNs;
     }
