@@ -29,28 +29,31 @@ import java.sql.SQLException;
 public class Q3 extends GenericQuery {
 
     public final SQLStmt query_stmt = new SQLStmt(
-            "select "
-                    + "l_orderkey, "
-                    + "sum(l_extendedprice * (1 - l_discount)) as revenue, "
-                    + "o_orderdate, "
-                    + "o_shippriority "
-                    + "from "
-                    + "customer, "
-                    + "orders, "
-                    + "lineitem "
-                    + "where "
-                    + "c_mktsegment = ? "
-                    + "and c_custkey = o_custkey "
-                    + "and l_orderkey = o_orderkey "
-                    + "and o_orderdate < date ? "
-                    + "and l_shipdate > date ? "
-                    + "group by "
-                    + "l_orderkey, "
-                    + "o_orderdate, "
-                    + "o_shippriority "
-                    + "order by "
-                    + "revenue desc, "
-                    + "o_orderdate"
+            // @formatter:off
+              "select "
+            +     "l_orderkey, "
+            +     "sum(l_extendedprice * (1 - l_discount)) as revenue, "
+            +     "o_orderdate, "
+            +     "o_shippriority "
+            + "from "
+            +     "customer, "
+            +     "orders, "
+            +     "lineitem "
+            + "where "
+            +     "c_mktsegment = ? "
+            +     "and c_custkey = o_custkey "
+            +     "and l_orderkey = o_orderkey "
+            +     "and o_orderdate < date ? "
+            +     "and l_shipdate > date ? "
+            + "group by "
+            +     "l_orderkey, "
+            +     "o_orderdate, "
+            +     "o_shippriority "
+            + "order by "
+            +     "revenue desc, "
+            +     "o_orderdate "
+            + "limit 10"
+            // @formatter:on
     );
 
     @Override
@@ -59,12 +62,12 @@ public class Q3 extends GenericQuery {
 
         // date must be randomly selected between [1995-03-01, 1995-03-31]
         int day = rand.number(1, 31);
-        String date = String.format("1995-03-%02d", day);
+        Date date = Date.valueOf(String.format("1995-03-%02d", day));
 
         PreparedStatement stmt = this.getPreparedStatement(conn, query_stmt);
         stmt.setString(1, segment);
-        stmt.setString(2, date);
-        stmt.setString(3, date);
+        stmt.setDate(2, date);
+        stmt.setDate(3, date);
         return stmt;
     }
 }

@@ -27,38 +27,40 @@ import java.sql.SQLException;
 public class Q4 extends GenericQuery {
 
     public final SQLStmt query_stmt = new SQLStmt(
-            "select "
-                    + "o_orderpriority, "
-                    + "count(*) as order_count "
-                    + "from "
-                    + "orders "
-                    + "where "
-                    + "o_orderdate >= date ? "
-                    + "and o_orderdate < date ? + interval '3' month "
-                    + "and exists ( "
-                    + "select "
-                    + "* "
-                    + "from "
-                    + "lineitem "
-                    + "where "
-                    + "l_orderkey = o_orderkey "
-                    + "and l_commitdate < l_receiptdate "
-                    + ") "
-                    + "group by "
-                    + "o_orderpriority "
-                    + "order by "
-                    + "o_orderpriority"
+            // @formatter:off
+              "select "
+            +     "o_orderpriority, "
+            +     "count(*) as order_count "
+            + "from "
+            +     "orders "
+            + "where "
+            +     "o_orderdate >= date ? "
+            +     "and o_orderdate < date ? + interval '3' month "
+            +     "and exists ( "
+            +         "select "
+            +             "* "
+            +         "from "
+            +             "lineitem "
+            +         "where "
+            +             "l_orderkey = o_orderkey "
+            +             "and l_commitdate < l_receiptdate "
+            +     ") "
+            + "group by "
+            +     "o_orderpriority "
+            + "order by "
+            +     "o_orderpriority"
+            // @formatter:on
     );
 
     @Override
     protected PreparedStatement getStatement(Connection conn, RandomGenerator rand) throws SQLException {
         int year = rand.number(1993, 1997);
         int month = rand.number(1, 10);
-        String date = String.format("%d-%02d-01", year, month);
+        Date date = Date.valueOf(String.format("%d-%02d-01", year, month));
 
         PreparedStatement stmt = this.getPreparedStatement(conn, query_stmt);
-        stmt.setString(1, date);
-        stmt.setString(2, date);
+        stmt.setDate(1, date);
+        stmt.setDate(2, date);
         return stmt;
     }
 }

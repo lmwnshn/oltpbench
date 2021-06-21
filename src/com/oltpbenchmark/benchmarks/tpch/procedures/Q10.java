@@ -27,37 +27,40 @@ import java.sql.SQLException;
 public class Q10 extends GenericQuery {
 
     public final SQLStmt query_stmt = new SQLStmt(
-            "select "
-                    + "c_custkey, "
-                    + "c_name, "
-                    + "sum(l_extendedprice * (1 - l_discount)) as revenue, "
-                    + "c_acctbal, "
-                    + "n_name, "
-                    + "c_address, "
-                    + "c_phone, "
-                    + "c_comment "
-                    + "from "
-                    + "customer, "
-                    + "orders, "
-                    + "lineitem, "
-                    + "nation "
-                    + "where "
-                    + "c_custkey = o_custkey "
-                    + "and l_orderkey = o_orderkey "
-                    + "and o_orderdate >= date ? "
-                    + "and o_orderdate < date ? + interval '3' month "
-                    + "and l_returnflag = 'R' "
-                    + "and c_nationkey = n_nationkey "
-                    + "group by "
-                    + "c_custkey, "
-                    + "c_name, "
-                    + "c_acctbal, "
-                    + "c_phone, "
-                    + "n_name, "
-                    + "c_address, "
-                    + "c_comment "
-                    + "order by "
-                    + "revenue desc"
+            // @formatter:off
+              "select "
+            +     "c_custkey, "
+            +     "c_name, "
+            +     "sum(l_extendedprice * (1 - l_discount)) as revenue, "
+            +     "c_acctbal, "
+            +     "n_name, "
+            +     "c_address, "
+            +     "c_phone, "
+            +     "c_comment "
+            + "from "
+            +     "customer, "
+            +     "orders, "
+            +     "lineitem, "
+            +     "nation "
+            + "where "
+            +     "c_custkey = o_custkey "
+            +     "and l_orderkey = o_orderkey "
+            +     "and o_orderdate >= date ? "
+            +     "and o_orderdate < date ? + interval '3' month "
+            +     "and l_returnflag = 'R' "
+            +     "and c_nationkey = n_nationkey "
+            + "group by "
+            +     "c_custkey, "
+            +     "c_name, "
+            +     "c_acctbal, "
+            +     "c_phone, "
+            +     "n_name, "
+            +     "c_address, "
+            +     "c_comment "
+            + "order by "
+            +     "revenue desc "
+            + "limit 20"
+            // @formatter:on
     );
 
     @Override
@@ -65,11 +68,11 @@ public class Q10 extends GenericQuery {
         // DATE is the first day of a randomly selected month from the second month of 1993 to the first month of 1995
         int year = rand.number(1993, 1995);
         int month = rand.number(year == 1993 ? 2 : 1, year == 1995 ? 1 : 12);
-        String date = String.format("%d-%02d-01", year, month);
+        Date date = Date.valueOf(String.format("%d-%02d-01", year, month));
 
         PreparedStatement stmt = this.getPreparedStatement(conn, query_stmt);
-        stmt.setString(1, date);
-        stmt.setString(2, date);
+        stmt.setDate(1, date);
+        stmt.setDate(2, date);
         return stmt;
     }
 }

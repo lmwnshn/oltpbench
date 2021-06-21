@@ -31,36 +31,38 @@ import java.util.Set;
 public class Q16 extends GenericQuery {
 
     public final SQLStmt query_stmt = new SQLStmt(
-            "select "
-                    + "p_brand, "
-                    + "p_type, "
-                    + "p_size, "
-                    + "count(distinct ps_suppkey) as supplier_cnt "
-                    + "from "
-                    + "partsupp, "
-                    + "part "
-                    + "where "
-                    + "p_partkey = ps_partkey "
-                    + "and p_brand <> ? "
-                    + "and p_type not like ? "
-                    + "and p_size in (?, ?, ?, ?, ?, ?, ?, ?) "
-                    + "and ps_suppkey not in ( "
-                    + "select "
-                    + "s_suppkey "
-                    + "from "
-                    + "supplier "
-                    + "where "
-                    + "s_comment like '%Customer%Complaints%' "
-                    + ") "
-                    + "group by "
-                    + "p_brand, "
-                    + "p_type, "
-                    + "p_size "
-                    + "order by "
-                    + "supplier_cnt desc, "
-                    + "p_brand, "
-                    + "p_type, "
-                    + "p_size"
+            // @formatter:off
+              "select "
+            +     "p_brand, "
+            +     "p_type, "
+            +     "p_size, "
+            +     "count(distinct ps_suppkey) as supplier_cnt "
+            + "from "
+            +     "partsupp, "
+            +     "part "
+            + "where "
+            +     "p_partkey = ps_partkey "
+            +     "and p_brand <> ? "
+            +     "and p_type not like ? "
+            +     "and p_size in (?, ?, ?, ?, ?, ?, ?, ?) "
+            +     "and ps_suppkey not in ( "
+            +         "select "
+            +             "s_suppkey "
+            +         "from "
+            +             "supplier "
+            +         "where "
+            +             "s_comment like '%Customer%Complaints%' "
+            +     ") "
+            + "group by "
+            +     "p_brand, "
+            +     "p_type, "
+            +     "p_size "
+            + "order by "
+            +     "supplier_cnt desc, "
+            +     "p_brand, "
+            +     "p_type, "
+            +     "p_size"
+            // @formatter:on
     );
 
     @Override
@@ -78,7 +80,7 @@ public class Q16 extends GenericQuery {
         String type = String.format("%s %s", syllable1, syllable2) + "%";
 
         // SIZE_n is randomly selected as a set of eight different values within [1 .. 50]
-
+        // for n in [1,8]
         int[] sizes = new int[8];
         Set<Integer> seen = new HashSet<>(8);
 

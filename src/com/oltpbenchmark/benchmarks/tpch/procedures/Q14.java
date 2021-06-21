@@ -27,19 +27,21 @@ import java.sql.SQLException;
 public class Q14 extends GenericQuery {
 
     public final SQLStmt query_stmt = new SQLStmt(
-            "select "
-                    + "100.00 * sum(case "
-                    + "when p_type like 'PROMO%' "
-                    + "then l_extendedprice * (1 - l_discount) "
-                    + "else 0 "
-                    + "end) / sum(l_extendedprice * (1 - l_discount)) as promo_revenue "
-                    + "from "
-                    + "lineitem, "
-                    + "part "
-                    + "where "
-                    + "l_partkey = p_partkey "
-                    + "and l_shipdate >= date ? "
-                    + "and l_shipdate < date ? + interval '1' month"
+            // @formatter:off
+              "select "
+            +     "100.00 * sum(case "
+            +         "when p_type like 'PROMO%' "
+            +             "then l_extendedprice * (1 - l_discount) "
+            +         "else 0 "
+            +     "end) / sum(l_extendedprice * (1 - l_discount)) as promo_revenue "
+            + "from "
+            +     "lineitem, "
+            +     "part "
+            + "where "
+            +     "l_partkey = p_partkey "
+            +     "and l_shipdate >= date ? "
+            +     "and l_shipdate < date ? + interval '1' month"
+            // @formatter:on
     );
 
     @Override
@@ -47,11 +49,11 @@ public class Q14 extends GenericQuery {
         // DATE is the first day of a month randomly selected from a random year within [1993 .. 1997]
         int year = rand.number(1993, 1997);
         int month = rand.number(1, 12);
-        String date = String.format("%d-%02d-01", year, month);
+        Date date = Date.valueOf(String.format("%d-%02d-01", year, month));
 
         PreparedStatement stmt = this.getPreparedStatement(conn, query_stmt);
-        stmt.setString(1, date);
-        stmt.setString(2, date);
+        stmt.setDate(1, date);
+        stmt.setDate(2, date);
         return stmt;
     }
 }

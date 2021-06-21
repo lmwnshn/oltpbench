@@ -29,30 +29,32 @@ import java.sql.SQLException;
 public class Q5 extends GenericQuery {
 
     public final SQLStmt query_stmt = new SQLStmt(
-            "select "
-                    + "n_name, "
-                    + "sum(l_extendedprice * (1 - l_discount)) as revenue "
-                    + "from "
-                    + "customer, "
-                    + "orders, "
-                    + "lineitem, "
-                    + "supplier, "
-                    + "nation, "
-                    + "region "
-                    + "where "
-                    + "c_custkey = o_custkey "
-                    + "and l_orderkey = o_orderkey "
-                    + "and l_suppkey = s_suppkey "
-                    + "and c_nationkey = s_nationkey "
-                    + "and s_nationkey = n_nationkey "
-                    + "and n_regionkey = r_regionkey "
-                    + "and r_name = ? "
-                    + "and o_orderdate >= date ? "
-                    + "and o_orderdate < date ? + interval '1' year "
-                    + "group by "
-                    + "n_name "
-                    + "order by "
-                    + "revenue desc"
+            // @formatter:off
+              "select "
+            +     "n_name, "
+            +     "sum(l_extendedprice * (1 - l_discount)) as revenue "
+            + "from "
+            +     "customer, "
+            +     "orders, "
+            +     "lineitem, "
+            +     "supplier, "
+            +     "nation, "
+            +     "region "
+            + "where "
+            +     "c_custkey = o_custkey "
+            +     "and l_orderkey = o_orderkey "
+            +     "and l_suppkey = s_suppkey "
+            +     "and c_nationkey = s_nationkey "
+            +     "and s_nationkey = n_nationkey "
+            +     "and n_regionkey = r_regionkey "
+            +     "and r_name = ? "
+            +     "and o_orderdate >= date ? "
+            +     "and o_orderdate < date ? + interval '1' year "
+            + "group by "
+            +     "n_name "
+            + "order by "
+            +     "revenue desc"
+            // @formatter:on
     );
 
     @Override
@@ -60,12 +62,12 @@ public class Q5 extends GenericQuery {
         String region = TPCHUtil.choice(TPCHConstants.R_NAME, rand);
 
         int year = rand.number(1993, 1997);
-        String date = String.format("%d-01-01", year);
+        Date date = Date.valueOf(String.format("%d-01-01", year));
 
         PreparedStatement stmt = this.getPreparedStatement(conn, query_stmt);
         stmt.setString(1, region);
-        stmt.setString(2, date);
-        stmt.setString(3, date);
+        stmt.setDate(2, date);
+        stmt.setDate(3, date);
         return stmt;
     }
 }

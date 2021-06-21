@@ -29,34 +29,36 @@ import java.sql.SQLException;
 public class Q12 extends GenericQuery {
 
     public final SQLStmt query_stmt = new SQLStmt(
-            "select "
-                    + "l_shipmode, "
-                    + "sum(case "
-                    + "when o_orderpriority = '1-URGENT' "
-                    + "or o_orderpriority = '2-HIGH' "
-                    + "then 1 "
-                    + "else 0 "
-                    + "end) as high_line_count, "
-                    + "sum(case "
-                    + "when o_orderpriority <> '1-URGENT' "
-                    + "and o_orderpriority <> '2-HIGH' "
-                    + "then 1 "
-                    + "else 0 "
-                    + "end) as low_line_count "
-                    + "from "
-                    + "orders, "
-                    + "lineitem "
-                    + "where "
-                    + "o_orderkey = l_orderkey "
-                    + "and l_shipmode in (?, ?) "
-                    + "and l_commitdate < l_receiptdate "
-                    + "and l_shipdate < l_commitdate "
-                    + "and l_receiptdate >= date ? "
-                    + "and l_receiptdate < date ? + interval '1' year "
-                    + "group by "
-                    + "l_shipmode "
-                    + "order by "
-                    + "l_shipmode"
+            // @formatter:off
+              "select "
+            +     "l_shipmode, "
+            +     "sum(case "
+            +         "when o_orderpriority = '1-URGENT' "
+            +             "or o_orderpriority = '2-HIGH' "
+            +             "then 1 "
+            +         "else 0 "
+            +     "end) as high_line_count, "
+            +     "sum(case "
+            +         "when o_orderpriority <> '1-URGENT' "
+            +             "and o_orderpriority <> '2-HIGH' "
+            +             "then 1 "
+            +         "else 0 "
+            +     "end) as low_line_count "
+            + "from "
+            +     "orders, "
+            +     "lineitem "
+            + "where "
+            +     "o_orderkey = l_orderkey "
+            +     "and l_shipmode in (?, ?) "
+            +     "and l_commitdate < l_receiptdate "
+            +     "and l_shipdate < l_commitdate "
+            +     "and l_receiptdate >= date ? "
+            +     "and l_receiptdate < date ? + interval '1' year "
+            + "group by "
+            +     "l_shipmode "
+            + "order by "
+            +     "l_shipmode"
+            // @formatter:on
     );
 
     @Override
@@ -73,13 +75,13 @@ public class Q12 extends GenericQuery {
 
         // DATE is the first of January of a randomly selected year within [1993 .. 1997]
         int year = rand.number(1993, 1997);
-        String date = String.format("%d-01-01", year);
+        Date date = Date.valueOf(String.format("%d-01-01", year));
 
         PreparedStatement stmt = this.getPreparedStatement(conn, query_stmt);
         stmt.setString(1, shipMode1);
         stmt.setString(2, shipMode2);
-        stmt.setString(3, date);
-        stmt.setString(4, date);
+        stmt.setDate(3, date);
+        stmt.setDate(4, date);
         return stmt;
     }
 }

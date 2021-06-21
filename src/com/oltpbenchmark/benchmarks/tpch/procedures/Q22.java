@@ -29,49 +29,51 @@ import java.util.Set;
 public class Q22 extends GenericQuery {
 
     public final SQLStmt query_stmt = new SQLStmt(
-            "select "
-                    + "cntrycode, "
-                    + "count(*) as numcust, "
-                    + "sum(c_acctbal) as totacctbal "
-                    + "from "
-                    + "( "
-                    + "select "
-                    + "substring(c_phone from 1 for 2) as cntrycode, "
-                    + "c_acctbal "
-                    + "from "
-                    + "customer "
-                    + "where "
-                    + "substring(c_phone from 1 for 2) in "
-                    + "(?, ?, ?, ?, ?, ?, ?) "
-                    + "and c_acctbal > ( "
-                    + "select "
-                    + "avg(c_acctbal) "
-                    + "from "
-                    + "customer "
-                    + "where "
-                    + "c_acctbal > 0.00 "
-                    + "and substring(c_phone from 1 for 2) in "
-                    + "(?, ?, ?, ?, ?, ?, ?) "
-                    + ") "
-                    + "and not exists ( "
-                    + "select "
-                    + "* "
-                    + "from "
-                    + "orders "
-                    + "where "
-                    + "o_custkey = c_custkey "
-                    + ") "
-                    + ") as custsale "
-                    + "group by "
-                    + "cntrycode "
-                    + "order by "
-                    + "cntrycode"
-    );
+            // @formatter:off
+              "select "
+            +     "cntrycode, "
+            +     "count(*) as numcust, "
+            +     "sum(c_acctbal) as totacctbal "
+            + "from "
+            +     "( "
+            +         "select "
+            +             "substring(c_phone from 1 for 2) as cntrycode, "
+            +             "c_acctbal "
+            +         "from "
+            +             "customer "
+            +         "where "
+            +             "substring(c_phone from 1 for 2) in "
+            +                 "(?, ?, ?, ?, ?, ?, ?) "
+            +             "and c_acctbal > ( "
+            +                 "select "
+            +                     "avg(c_acctbal) "
+            +                 "from "
+            +                     "customer "
+            +                 "where "
+            +                     "c_acctbal > 0.00 "
+            +                     "and substring(c_phone from 1 for 2) in "
+            +                         "(?, ?, ?, ?, ?, ?, ?) "
+            +             ") "
+            +             "and not exists ( "
+            +                 "select "
+            +                     "* "
+            +                 "from "
+            +                     "orders "
+            +                 "where "
+            +                     "o_custkey = c_custkey "
+            +             ") "
+            +     ") as custsale "
+            + "group by "
+            +     "cntrycode "
+            + "order by "
+            +     "cntrycode"
+            // @formatter:on
+        );
 
     @Override
     protected PreparedStatement getStatement(Connection conn, RandomGenerator rand) throws SQLException {
         // I1 - I7 are randomly selected without repetition from the possible values
-
+        // for Country code as defined in Clause 4.2.2.9
 
         // We are given
         //      Let i be an index into the list of strings Nations
@@ -94,10 +96,10 @@ public class Q22 extends GenericQuery {
 
         PreparedStatement stmt = this.getPreparedStatement(conn, query_stmt);
         for (int i = 0; i < 7; i++) {
-            stmt.setInt(1 + i, codes[i]);
+            stmt.setString(1 + i, String.valueOf(codes[i]));
         }
         for (int i = 0; i < 7; i++) {
-            stmt.setInt(8 + i, codes[i]);
+            stmt.setString(8 + i, String.valueOf(codes[i]));
         }
         return stmt;
     }

@@ -29,23 +29,25 @@ import java.sql.SQLException;
 public class Q17 extends GenericQuery {
 
     public final SQLStmt query_stmt = new SQLStmt(
-            "select "
-                    + "sum(l_extendedprice) / 7.0 as avg_yearly "
-                    + "from "
-                    + "lineitem, "
-                    + "part "
-                    + "where "
-                    + "p_partkey = l_partkey "
-                    + "and p_brand = ? "
-                    + "and p_container = ? "
-                    + "and l_quantity < ( "
-                    + "select "
-                    + "0.2 * avg(l_quantity) "
-                    + "from "
-                    + "lineitem "
-                    + "where "
-                    + "l_partkey = p_partkey "
-                    + ")"
+            // @formatter:off
+              "select "
+            +     "sum(l_extendedprice) / 7.0 as avg_yearly "
+            + "from "
+            +     "lineitem, "
+            +     "part "
+            + "where "
+            +     "p_partkey = l_partkey "
+            +     "and p_brand = ? "
+            +     "and p_container = ? "
+            +     "and l_quantity < ( "
+            +         "select "
+            +             "0.2 * avg(l_quantity) "
+            +         "from "
+            +             "lineitem "
+            +         "where "
+            +             "l_partkey = p_partkey "
+            +     ")"
+            // @formatter:on
     );
 
     @Override
