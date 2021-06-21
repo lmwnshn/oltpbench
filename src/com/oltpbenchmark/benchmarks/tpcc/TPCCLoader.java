@@ -48,22 +48,31 @@ public class TPCCLoader extends Loader<TPCCBenchmark> {
     @Override
     public List<LoaderThread> createLoaderThreads() {
         List<LoaderThread> threads = new ArrayList<>();
-        final CountDownLatch itemLatch = new CountDownLatch(1);
+        int numLoaders = this.workConf.getLoaderThreads();
+        final CountDownLatch itemLatch = new CountDownLatch(numLoaders);
 
         // ITEM
-        // This will be invoked first and executed in a single thread.
-        threads.add(new LoaderThread(this.benchmark) {
-            @Override
-            public void load(Connection conn) {
-                loadItems(conn, TPCCConfig.configItemCount);
+        // The ITEM table will be fully loaded before any other table.
+        // Because the ITEM table is large (100k items per the TPC-C spec),
+        // we divide the ITEM table across the maximum number of loader threads.
+        for (int i = 1; i <= TPCCConfig.configItemCount;) {
+            int numItemsPerLoader = TPCCConfig.configItemCount / numLoaders;
+            int itemStartInclusive = i;
+            int itemEndInclusive = Math.min(TPCCConfig.configItemCount, itemStartInclusive + numItemsPerLoader - 1);
+            threads.add(new LoaderThread(this.benchmark) {
+                @Override
+                public void load(Connection conn) throws SQLException {
+                    loadItems(conn, itemStartInclusive, itemEndInclusive);
+                    itemLatch.countDown();
+                }
 
-            }
-
-            @Override
-            public void afterLoad() {
-                itemLatch.countDown();
-            }
-        });
+                @Override
+                public void afterLoad() {
+                    itemLatch.countDown();
+                }
+            });
+            i = itemEndInclusive + 1;
+        }
 
         // WAREHOUSES
         // We use a separate thread per warehouse. Each thread will load
@@ -134,7 +143,7 @@ public class TPCCLoader extends Loader<TPCCBenchmark> {
     }
 
 
-    protected void loadItems(Connection conn, int itemKount) {
+    protected int loadItems(Connection conn, int itemStartInclusive, int itemEndInclusive) {
         int k = 0;
         int randPct = 0;
         int len = 0;
@@ -143,7 +152,7 @@ public class TPCCLoader extends Loader<TPCCBenchmark> {
 
             Item item = new Item();
             int batchSize = 0;
-            for (int i = 1; i <= itemKount; i++) {
+            for (int i = itemStartInclusive; i <= itemEndInclusive; i++) {
 
                 item.i_id = i;
                 item.i_name = TPCCUtil.randomStr(TPCCUtil.randomNumber(14, 24, benchmark.rng()));
