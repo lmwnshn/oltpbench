@@ -104,8 +104,8 @@ public class GetPageAnonymous extends Procedure {
             }
         }
 
-        long revisionId;
-        long textId;
+        int revisionId;
+        int textId;
 
 
         try (PreparedStatement st = this.getPreparedStatement(conn, selectPageRevision)) {
@@ -118,8 +118,8 @@ public class GetPageAnonymous extends Procedure {
                     throw new UserAbortException(msg);
                 }
 
-                revisionId = rs.getLong("rev_id");
-                textId = rs.getLong("rev_text_id");
+                revisionId = rs.getInt("rev_id");
+                textId = rs.getInt("rev_text_id");
             }
         }
 
