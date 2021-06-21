@@ -41,24 +41,47 @@ public class NewItem extends Procedure {
     // STATEMENTS
     // -----------------------------------------------------------------
 
-    public final SQLStmt insertItem = new SQLStmt("INSERT INTO " + AuctionMarkConstants.TABLENAME_ITEM + "(" + "i_id," + "i_u_id," + "i_c_id," + "i_name," + "i_description," + "i_user_attributes," + "i_initial_price," + "i_current_price," + "i_num_bids," + "i_num_images," + "i_num_global_attrs," + "i_start_date," + "i_end_date," + "i_status, " + "i_created," + "i_updated," + "i_iattr0" + ") VALUES (" + "?," +  // i_id
-            "?," +  // i_u_id
-            "?," +  // i_c_id
-            "?," +  // i_name
-            "?," +  // i_description
-            "?," +  // i_user_attributes
-            "?," +  // i_initial_price
-            "?," +  // i_current_price
-            "?," +  // i_num_bids
-            "?," +  // i_num_images
-            "?," +  // i_num_global_attrs
-            "?," +  // i_start_date
-            "?," +  // i_end_date
-            "?," +  // i_status
-            "?," +  // i_created
-            "?," +  // i_updated
-            "1" +  // i_attr0
-            ")");
+    public final SQLStmt insertItem = new SQLStmt(
+            // @formatter:off
+            "INSERT INTO " + AuctionMarkConstants.TABLENAME_ITEM + "(" +
+                    "i_id," +
+                    "i_u_id," +
+                    "i_c_id," +
+                    "i_name," +
+                    "i_description," +
+                    "i_user_attributes," +
+                    "i_initial_price," +
+                    "i_current_price," +
+                    "i_num_bids," +
+                    "i_num_images," +
+                    "i_num_global_attrs," +
+                    "i_start_date," +
+                    "i_end_date," +
+                    "i_status, " +
+                    "i_created," +
+                    "i_updated," +
+                    "i_iattr0" +
+                    ") VALUES (" +
+                    "?," +  // i_id
+                    "?," +  // i_u_id
+                    "?," +  // i_c_id
+                    "?," +  // i_name
+                    "?," +  // i_description
+                    "?," +  // i_user_attributes
+                    "?," +  // i_initial_price
+                    "?," +  // i_current_price
+                    "?," +  // i_num_bids
+                    "?," +  // i_num_images
+                    "?," +  // i_num_global_attrs
+                    "?," +  // i_start_date
+                    "?," +  // i_end_date
+                    "?," +  // i_status
+                    "?," +  // i_created
+                    "?," +  // i_updated
+                    "1"  +  // i_attr0
+                    ")"
+            // @formatter:on
+    );
 
     public final SQLStmt getCategory = new SQLStmt("SELECT * FROM " + AuctionMarkConstants.TABLENAME_CATEGORY + " WHERE c_id = ? ");
 
