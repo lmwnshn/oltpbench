@@ -178,7 +178,7 @@ public class UpdatePage extends Procedure {
             // =====================================================================
 
             // This seems to be executed only if the page is watched, and once
-
+            // for each "watcher"
             try (PreparedStatement ps = this.getPreparedStatement(conn, selectUser)) {
                 int param = 1;
                 for (Integer otherUserId : wlUser) {
