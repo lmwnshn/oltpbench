@@ -192,7 +192,22 @@ public class NewItem extends Procedure {
                 currentTime      // i_updated
         )) {
 
-            stmt.executeUpdate();
+            // NOTE: This may fail with a duplicate entry exception because
+            // the client's internal count of the number of items that this seller
+            // already has is wrong. That's ok. We'll just abort and ignore the problem
+            // Eventually the client's internal cache will catch up with what's in the database
+            try {
+                updated = stmt.executeUpdate();
+            } catch (SQLException ex) {
+                if (SQLUtil.isDuplicateKeyException(ex)) {
+                    conn.rollback();
+                    results = this.getPreparedStatement(conn, getSellerItemCount, seller_id).executeQuery();
+                    adv = results.next();
+                    int item_count = results.getInt(1);
+                    results.close();
+                    throw new DuplicateItemIdException(item_id, seller_id, item_count, ex);
+                } else throw ex;
+            }
         }
 
 
